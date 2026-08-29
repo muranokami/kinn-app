@@ -40,7 +40,6 @@ public class HealthProfileService {
         entity.setBodyTemperature(dto.getBodyTemperature());
         entity.setExerciseMinutes(dto.getExerciseMinutes());
         entity.setAvgSleepHours(dto.getAvgSleepHours());
-        entity.setStressLevel(dto.getStressLevel());
         entity.setSmokingStatus(dto.getSmokingStatus());
         entity.setDrinkingStatus(dto.getDrinkingStatus());
         entity.setHealthMemo(dto.getHealthMemo());
@@ -72,7 +71,6 @@ public class HealthProfileService {
                 .bodyTemperature(p.getBodyTemperature())
                 .exerciseMinutes(p.getExerciseMinutes())
                 .avgSleepHours(p.getAvgSleepHours())
-                .stressLevel(p.getStressLevel())
                 .smokingStatus(p.getSmokingStatus())
                 .drinkingStatus(p.getDrinkingStatus())
                 .healthMemo(p.getHealthMemo())

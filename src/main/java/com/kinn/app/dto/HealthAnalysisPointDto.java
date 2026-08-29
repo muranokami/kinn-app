@@ -22,6 +22,5 @@ public class HealthAnalysisPointDto {
     private Double overtimeHours;
     private Double sleepHours;
     private Integer fatigueLevel;
-    private Integer stressLevel;
     private Integer healthScore;
 }

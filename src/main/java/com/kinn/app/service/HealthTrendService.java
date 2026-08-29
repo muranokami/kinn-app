@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 健康状態の推移(健康スコア・体重・睡眠時間・疲労度・ストレス度・運動時間)を
+ * 健康状態の推移(健康スコア・体重・睡眠時間・疲労度・運動時間)を
  * 期間指定で取得するサービス。
  *
  * 体重は「今日の体調チェック」では入力しないため、既存の月次健康記録
@@ -61,7 +61,7 @@ public class HealthTrendService {
             Integer score = null;
             if (c != null) {
                 HealthScoreDto scoreDto = healthScoreService.calculate(
-                        d, c.getSleepHours(), c.getFatigueLevel(), c.getStressLevel(),
+                        d, c.getSleepHours(), c.getFatigueLevel(),
                         c.getExerciseMinutes(), c.getCondition());
                 if (scoreDto.isHasData()) score = scoreDto.getTotalScore();
             }
@@ -71,7 +71,6 @@ public class HealthTrendService {
                     .weightKg(weightByDate.get(d))
                     .sleepHours(c != null ? c.getSleepHours() : null)
                     .fatigueLevel(c != null ? c.getFatigueLevel() : null)
-                    .stressLevel(c != null ? c.getStressLevel() : null)
                     .exerciseMinutes(c != null ? c.getExerciseMinutes() : null)
                     .build());
         }

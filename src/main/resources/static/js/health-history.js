@@ -31,7 +31,7 @@ async function loadHistory() {
     renderHistory(trend.points);
   } catch (e) {
     console.error(e);
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">読み込みに失敗しました</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">読み込みに失敗しました</td></tr>`;
   }
 }
 
@@ -39,11 +39,11 @@ function renderHistory(points) {
   const tbody = document.getElementById("historyTbody");
   const recorded = points.filter(
     (p) => p.healthScore !== null || p.weightKg !== null || p.sleepHours !== null ||
-      p.fatigueLevel !== null || p.stressLevel !== null || p.exerciseMinutes !== null
+      p.fatigueLevel !== null || p.exerciseMinutes !== null
   );
 
   if (recorded.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">この期間の記録はありません</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">この期間の記録はありません</td></tr>`;
     return;
   }
 
@@ -56,7 +56,6 @@ function renderHistory(points) {
       <td>${p.weightKg ?? "-"}</td>
       <td>${p.sleepHours ?? "-"}</td>
       <td>${p.fatigueLevel ?? "-"}</td>
-      <td>${p.stressLevel ?? "-"}</td>
       <td>${p.exerciseMinutes ?? "-"}</td>
     `;
     tbody.appendChild(tr);

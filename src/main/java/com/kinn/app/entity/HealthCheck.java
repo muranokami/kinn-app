@@ -9,7 +9,13 @@ import java.time.LocalDateTime;
 /**
  * 「今日の体調チェック」1日分の記録。
  * 月次健康記録({@link HealthRecord})とは別テーブルで管理する
- * (疲労度・ストレス度など、健康スコア算出に必要な項目を持つため)。
+ * (疲労度など、健康スコア算出に必要な項目を持つため)。
+ *
+ * 以前は「ストレス度(stress_level)」も項目として持っていたが、労働安全衛生法上の
+ * ストレスチェック制度(第66条の10)と紛らわしい外形(心理的な負担の程度を個別に
+ * 測定・表示する機能)を作らないため、アプリからは完全に削除した
+ * (docs/health-audit-legal-checklist.md 参照)。DB上の`stress_level`列自体は
+ * 既存データ保護のため残しているが、このEntityからは参照しない。
  */
 @Entity
 @Table(
@@ -46,10 +52,6 @@ public class HealthCheck {
     /** 疲労度(1〜5、5が最も疲労が高い) */
     @Column(name = "fatigue_level")
     private Integer fatigueLevel;
-
-    /** ストレス度(1〜5、5が最もストレスが高い) */
-    @Column(name = "stress_level")
-    private Integer stressLevel;
 
     /** 運動時間(分) */
     @Column(name = "exercise_minutes")

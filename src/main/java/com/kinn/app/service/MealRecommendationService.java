@@ -222,9 +222,8 @@ public class MealRecommendationService {
                 .orElse(null);
 
         Set<String> wantedTags = analyzeGaps(prevDay, hasPrevData, todaysCheck, score);
-        boolean tiredOrStressed = todaysCheck != null
-                && ((todaysCheck.getFatigueLevel() != null && todaysCheck.getFatigueLevel() >= 4)
-                    || (todaysCheck.getStressLevel() != null && todaysCheck.getStressLevel() >= 4));
+        boolean isTired = todaysCheck != null
+                && todaysCheck.getFatigueLevel() != null && todaysCheck.getFatigueLevel() >= 4;
 
         List<String> allergens = splitList(preference.getAllergies());
         List<String> dislikes = splitList(preference.getDislikedFoods());
@@ -249,22 +248,22 @@ public class MealRecommendationService {
             // アレルギー食材が含まれていた食事だけは安全のためルールベースの提案に差し替える(多重防御)
             breakfast = safeAiOrFallback(raw.getBreakfast(), MealType.BREAKFAST, allergens,
                     () -> pickRuleBased(BREAKFAST_CATALOG, wantedTags, allergens, dislikes, attemptNo,
-                            MealType.BREAKFAST, hasPrevData, tiredOrStressed));
+                            MealType.BREAKFAST, hasPrevData, isTired));
             lunch = safeAiOrFallback(raw.getLunch(), MealType.LUNCH, allergens,
                     () -> pickRuleBased(LUNCH_CATALOG, wantedTags, allergens, dislikes, attemptNo,
-                            MealType.LUNCH, hasPrevData, tiredOrStressed));
+                            MealType.LUNCH, hasPrevData, isTired));
             dinner = safeAiOrFallback(raw.getDinner(), MealType.DINNER, allergens,
                     () -> pickRuleBased(DINNER_CATALOG, wantedTags, allergens, dislikes, attemptNo,
-                            MealType.DINNER, hasPrevData, tiredOrStressed));
+                            MealType.DINNER, hasPrevData, isTired));
         } else {
             source = AiSuggestionSource.RULE_BASED;
             summaryNote = defaultSummaryNote(hasPrevData);
             breakfast = pickRuleBased(BREAKFAST_CATALOG, wantedTags, allergens, dislikes, attemptNo,
-                    MealType.BREAKFAST, hasPrevData, tiredOrStressed);
+                    MealType.BREAKFAST, hasPrevData, isTired);
             lunch = pickRuleBased(LUNCH_CATALOG, wantedTags, allergens, dislikes, attemptNo,
-                    MealType.LUNCH, hasPrevData, tiredOrStressed);
+                    MealType.LUNCH, hasPrevData, isTired);
             dinner = pickRuleBased(DINNER_CATALOG, wantedTags, allergens, dislikes, attemptNo,
-                    MealType.DINNER, hasPrevData, tiredOrStressed);
+                    MealType.DINNER, hasPrevData, isTired);
         }
 
         AiMealSuggestion entity = AiMealSuggestion.builder()
@@ -330,8 +329,7 @@ public class MealRecommendationService {
         if (calories != null && calories > CALORIES_HIGH_THRESHOLD_KCAL) wanted.add("light");
         if (calories != null && calories > 0 && calories < CALORIES_LOW_THRESHOLD_KCAL) wanted.add("hearty");
 
-        if (check != null && ((check.getFatigueLevel() != null && check.getFatigueLevel() >= 4)
-                || (check.getStressLevel() != null && check.getStressLevel() >= 4))) {
+        if (check != null && check.getFatigueLevel() != null && check.getFatigueLevel() >= 4) {
             wanted.add("light");
         }
         if (score != null && score.isHasData() && score.getTotalScore() < 40) {
@@ -347,7 +345,7 @@ public class MealRecommendationService {
 
     private AiMealSuggestionItemDto pickRuleBased(
             List<MenuCandidate> catalog, Set<String> wantedTags, List<String> allergens, List<String> dislikes,
-            int attemptNo, MealType mealType, boolean hasPrevData, boolean tiredOrStressed) {
+            int attemptNo, MealType mealType, boolean hasPrevData, boolean isTired) {
 
         List<MenuCandidate> candidates = filterCandidates(catalog, allergens, dislikes);
 
@@ -359,7 +357,7 @@ public class MealRecommendationService {
         // 「別の献立を提案」のたびに候補を巡回させることで、同じ献立を繰り返さないようにする
         MenuCandidate chosen = sorted.get((attemptNo - 1) % sorted.size());
 
-        String reason = buildReason(chosen, wantedTags, hasPrevData, mealType, tiredOrStressed);
+        String reason = buildReason(chosen, wantedTags, hasPrevData, mealType, isTired);
 
         return AiMealSuggestionItemDto.builder()
                 .mealType(mealType)
@@ -399,7 +397,7 @@ public class MealRecommendationService {
     }
 
     private String buildReason(MenuCandidate chosen, Set<String> wantedTags, boolean hasPrevData,
-                                MealType mealType, boolean tiredOrStressed) {
+                                MealType mealType, boolean isTired) {
         List<String> reasons = new ArrayList<>();
         if (!hasPrevData) {
             reasons.add("食事記録が少ないため、一般的な栄養バランスを考慮した提案です。");
@@ -421,7 +419,7 @@ public class MealRecommendationService {
                 reasons.add("昨日の食事内容も踏まえ、栄養バランスを整えるメニューにしています。");
             }
         }
-        if (tiredOrStressed && mealType == MealType.BREAKFAST) {
+        if (isTired && mealType == MealType.BREAKFAST) {
             reasons.add("疲労やストレスが高めのようなので、無理なく食べられる内容を意識しています。");
         }
         if (mealType == MealType.DINNER) {

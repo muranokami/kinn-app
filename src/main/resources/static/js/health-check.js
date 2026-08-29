@@ -3,12 +3,10 @@
 // ------------------------------------------------------------------
 let selectedCondition = null;
 let selectedFatigue = null;
-let selectedStress = null;
 
 window.addEventListener("DOMContentLoaded", () => {
   buildConditionPills();
   buildScale("fatigueScale", (v) => { selectedFatigue = v; });
-  buildScale("stressScale", (v) => { selectedStress = v; });
 
   document.getElementById("checkDateLabel").textContent =
     `今日の記録(${healthTodayStr()})`;
@@ -73,7 +71,6 @@ async function loadToday() {
 function applyToForm(c) {
   if (c.condition) selectPill(c.condition);
   if (c.fatigueLevel) selectScale("fatigueScale", c.fatigueLevel, (v) => { selectedFatigue = v; });
-  if (c.stressLevel) selectScale("stressScale", c.stressLevel, (v) => { selectedStress = v; });
   document.getElementById("sleepHours").value = c.sleepHours ?? "";
   document.getElementById("exerciseMinutes").value = c.exerciseMinutes ?? "";
   document.getElementById("bodyTemperature").value = c.bodyTemperature ?? "";
@@ -104,7 +101,6 @@ async function saveCheck() {
     condition: selectedCondition,
     sleepHours: num("sleepHours"),
     fatigueLevel: selectedFatigue,
-    stressLevel: selectedStress,
     exerciseMinutes: num("exerciseMinutes"),
     bodyTemperature: num("bodyTemperature"),
     memo: document.getElementById("memo").value,
@@ -149,7 +145,7 @@ function renderRecent(list) {
   if (recorded.length === 0) {
     const tr = document.createElement("tr");
     tr.className = "empty-row";
-    tr.innerHTML = `<td colspan="8">まだ記録がありません</td>`;
+    tr.innerHTML = `<td colspan="7">まだ記録がありません</td>`;
     tbody.appendChild(tr);
     return;
   }
@@ -161,7 +157,6 @@ function renderRecent(list) {
       <td>${conditionOpt ? conditionOpt.icon + " " + conditionOpt.label : "-"}</td>
       <td>${c.sleepHours ?? "-"}</td>
       <td>${c.fatigueLevel ?? "-"}</td>
-      <td>${c.stressLevel ?? "-"}</td>
       <td>${c.exerciseMinutes ?? "-"}</td>
       <td>${c.bodyTemperature ?? "-"}</td>
       <td style="text-align:left;">${escapeHtml(c.memo ?? "")}</td>

@@ -26,7 +26,6 @@ public class HealthScoreDto {
     private String level;
     private int sleepScore;
     private int fatigueScore;
-    private int stressScore;
     private int exerciseScore;
     private int conditionScore;
 }

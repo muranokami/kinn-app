@@ -22,6 +22,5 @@ public class HealthTrendPointDto {
     private Double weightKg;
     private Double sleepHours;
     private Integer fatigueLevel;
-    private Integer stressLevel;
     private Integer exerciseMinutes;
 }

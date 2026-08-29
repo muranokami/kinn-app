@@ -23,7 +23,7 @@ function updateActiveTab() {
 
 async function loadAnalysis() {
   const tbody = document.getElementById("analysisTbody");
-  tbody.innerHTML = `<tr class="empty-row"><td colspan="7">読み込み中...</td></tr>`;
+  tbody.innerHTML = `<tr class="empty-row"><td colspan="6">読み込み中...</td></tr>`;
   try {
     const res = await fetch(`/api/health/analysis?employeeId=${HEALTH_EMPLOYEE_ID}&period=${analysisPeriod}`);
     if (!res.ok) throw new Error("読み込みに失敗しました");
@@ -32,7 +32,7 @@ async function loadAnalysis() {
     renderTable(data.points);
   } catch (e) {
     console.error(e);
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">読み込みに失敗しました</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">読み込みに失敗しました</td></tr>`;
   }
 }
 
@@ -41,8 +41,6 @@ function renderSummary(s) {
   setVal("scoreHighOt", s.avgHealthScoreHighOvertime);
   setVal("fatigueShortSleep", s.avgFatigueShortSleep);
   setVal("fatigueEnoughSleep", s.avgFatigueEnoughSleep);
-  setVal("stressHighOt", s.avgStressHighOvertime);
-  setVal("stressLowOt", s.avgStressLowOvertime);
 }
 
 function setVal(id, value) {
@@ -52,7 +50,7 @@ function setVal(id, value) {
 function renderTable(points) {
   const tbody = document.getElementById("analysisTbody");
   if (!points || points.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">この期間のデータはありません</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">この期間のデータはありません</td></tr>`;
     return;
   }
   tbody.innerHTML = "";
@@ -64,7 +62,6 @@ function renderTable(points) {
       <td>${p.overtimeHours ?? "-"}</td>
       <td>${p.sleepHours ?? "-"}</td>
       <td>${p.fatigueLevel ?? "-"}</td>
-      <td>${p.stressLevel ?? "-"}</td>
       <td>${p.healthScore ?? "-"}</td>
     `;
     tbody.appendChild(tr);

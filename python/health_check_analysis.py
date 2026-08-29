@@ -86,9 +86,11 @@ def fetch_attendance(conn, employee_id: str, first_day: dt.date, last_day: dt.da
 
 
 def fetch_health_checks(conn, employee_id: str, first_day: dt.date, last_day: dt.date):
+    # stress_level列は取得しない(ストレス関連の測定・分析はアプリから撤廃済み。
+    # docs/health-audit-legal-checklist.md参照。既存データもV2マイグレーションでNULL化済み)
     sql = """
         SELECT check_date, condition_level, sleep_hours, fatigue_level,
-               stress_level, exercise_minutes, body_temperature
+               exercise_minutes, body_temperature
         FROM health_check
         WHERE employee_id = %s AND check_date BETWEEN %s AND %s
         ORDER BY check_date
@@ -119,8 +121,7 @@ def simple_health_score(row) -> Optional[float]:
     正式なスコアはJavaアプリのAPI(/api/health/score)を参照してください。"""
     sleep_h = row["sleep_hours"]
     fatigue = row["fatigue_level"]
-    stress = row["stress_level"]
-    if sleep_h is None and fatigue is None and stress is None:
+    if sleep_h is None and fatigue is None:
         return None
 
     def sleep_score(h):
@@ -135,9 +136,8 @@ def simple_health_score(row) -> Optional[float]:
         lv = max(1, min(5, lv))
         return (5 - lv) * 25
 
-    return round(sleep_score(float(sleep_h) if sleep_h is not None else None) * 0.4
-                 + level_score(fatigue) * 0.3
-                 + level_score(stress) * 0.3, 1)
+    return round(sleep_score(float(sleep_h) if sleep_h is not None else None) * 0.6
+                 + level_score(fatigue) * 0.4, 1)
 
 
 def pearson_correlation(xs: list[float], ys: list[float]) -> Optional[float]:
@@ -161,7 +161,6 @@ class AnalysisResult:
     sample_days: int = 0
     corr_overtime_score: Optional[float] = None
     corr_sleep_fatigue: Optional[float] = None
-    corr_overtime_stress: Optional[float] = None
     avg_score_low_overtime: Optional[float] = None
     avg_score_high_overtime: Optional[float] = None
 
@@ -176,7 +175,6 @@ def analyze(attendance_rows, health_rows) -> AnalysisResult:
     score_by_date = {}
     sleep_by_date = {}
     fatigue_by_date = {}
-    stress_by_date = {}
     for r in health_rows:
         score = simple_health_score(r)
         if score is not None:
@@ -185,8 +183,6 @@ def analyze(attendance_rows, health_rows) -> AnalysisResult:
             sleep_by_date[r["check_date"]] = float(r["sleep_hours"])
         if r["fatigue_level"] is not None:
             fatigue_by_date[r["check_date"]] = r["fatigue_level"]
-        if r["stress_level"] is not None:
-            stress_by_date[r["check_date"]] = r["stress_level"]
 
     result = AnalysisResult()
 
@@ -208,13 +204,6 @@ def analyze(attendance_rows, health_rows) -> AnalysisResult:
     if sf_dates:
         result.corr_sleep_fatigue = pearson_correlation(
             [sleep_by_date[d] for d in sf_dates], [fatigue_by_date[d] for d in sf_dates]
-        )
-
-    # 残業時間 × ストレス度
-    os_dates = sorted(set(overtime_by_date) & set(stress_by_date))
-    if os_dates:
-        result.corr_overtime_stress = pearson_correlation(
-            [overtime_by_date[d] for d in os_dates], [stress_by_date[d] for d in os_dates]
         )
 
     return result
@@ -243,11 +232,6 @@ def build_report(employee_id: str, first_day: dt.date, last_day: dt.date, r: Ana
     lines.append(f"  相関係数(睡眠時間 vs 疲労度): {fmt(r.corr_sleep_fatigue)}")
     if r.corr_sleep_fatigue is not None and r.corr_sleep_fatigue <= -0.3:
         lines.append("  → 睡眠時間が短い日ほど疲労度が高くなる傾向が見られます。")
-
-    lines.append("\n■ 残業時間 と ストレス度の関係")
-    lines.append(f"  相関係数(残業時間 vs ストレス度): {fmt(r.corr_overtime_stress)}")
-    if r.corr_overtime_stress is not None and r.corr_overtime_stress >= 0.3:
-        lines.append("  → 残業が多い日ほどストレス度が高くなる傾向が見られます。")
 
     lines.append(
         "\n※ 相関係数は -1〜1 の値で、0に近いほど関係が薄く、"

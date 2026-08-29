@@ -31,7 +31,6 @@ public class HealthAlertService {
 
     private static final double LOW_SLEEP_THRESHOLD_HOURS = 5.5;
     private static final double HIGH_FATIGUE_THRESHOLD = 4.0;
-    private static final double HIGH_STRESS_THRESHOLD = 4.0;
     private static final double HIGH_OVERTIME_THRESHOLD_HOURS = 20.0;
 
     private final HealthCheckRepository healthCheckRepository;
@@ -81,10 +80,8 @@ public class HealthAlertService {
                 HealthAlertType.HIGH_FATIGUE, HealthAlertSeverity.WARNING,
                 "最近、疲労度が高い状態が続いています。十分な休息を取ることをおすすめします。");
 
-        evaluateAverage(employeeId, today, checks, c -> intToDouble(c.getStressLevel()),
-                avg -> avg >= HIGH_STRESS_THRESHOLD,
-                HealthAlertType.HIGH_STRESS, HealthAlertSeverity.WARNING,
-                "最近、ストレスが高い状態が続いています。気分転換の時間を取ってみることをおすすめします。");
+        // ストレス関連のアラート判定は撤廃した(HealthAlertType.HIGH_STRESSのjavadoc、
+        // docs/health-audit-legal-checklist.md参照)。
 
         AttendanceRangeStatsDto stats = attendanceService.getRangeStats(employeeId, windowStart, today);
         if (stats.getOvertimeHours() >= HIGH_OVERTIME_THRESHOLD_HOURS) {

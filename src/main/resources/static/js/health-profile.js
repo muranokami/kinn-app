@@ -26,7 +26,6 @@ async function loadProfile() {
     setVal("bodyTemperature", p.bodyTemperature);
     setVal("exerciseMinutes", p.exerciseMinutes);
     setVal("avgSleepHours", p.avgSleepHours);
-    setVal("stressLevel", p.stressLevel);
     document.getElementById("smokingStatus").value = p.smokingStatus ?? "";
     document.getElementById("drinkingStatus").value = p.drinkingStatus ?? "";
     document.getElementById("department").value = p.department ?? "";
@@ -73,7 +72,6 @@ async function saveProfile() {
     bodyTemperature: numOrNull("bodyTemperature"),
     exerciseMinutes: numOrNull("exerciseMinutes"),
     avgSleepHours: numOrNull("avgSleepHours"),
-    stressLevel: numOrNull("stressLevel"),
     smokingStatus: strOrNull("smokingStatus"),
     drinkingStatus: strOrNull("drinkingStatus"),
     department: strOrNull("department"),
@@ -124,7 +122,7 @@ async function deleteAllHealthData() {
     statusEl.textContent = "削除しました。";
     // 画面上の入力欄も未入力の状態に戻す
     ["heightCm", "weightKg", "systolicBp", "diastolicBp", "bodyTemperature",
-      "exerciseMinutes", "avgSleepHours", "stressLevel", "department", "healthMemo"]
+      "exerciseMinutes", "avgSleepHours", "department", "healthMemo"]
       .forEach((id) => { document.getElementById(id).value = ""; });
     document.getElementById("smokingStatus").value = "";
     document.getElementById("drinkingStatus").value = "";

@@ -4,7 +4,6 @@
 const SCORE_BREAKDOWN_ITEMS = [
   { key: "sleepScore", label: "睡眠スコア" },
   { key: "fatigueScore", label: "疲労スコア" },
-  { key: "stressScore", label: "ストレススコア" },
   { key: "exerciseScore", label: "運動スコア" },
   { key: "conditionScore", label: "体調スコア" },
 ];

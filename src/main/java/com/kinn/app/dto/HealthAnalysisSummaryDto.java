@@ -24,8 +24,4 @@ public class HealthAnalysisSummaryDto {
     private Double avgFatigueShortSleep;
     /** 睡眠が十分な日(6時間以上)の平均疲労度 */
     private Double avgFatigueEnoughSleep;
-    /** 残業が多い日(2時間以上)の平均ストレス度 */
-    private Double avgStressHighOvertime;
-    /** 残業が少ない日(2時間未満)の平均ストレス度 */
-    private Double avgStressLowOvertime;
 }

@@ -10,6 +10,11 @@ import java.time.LocalDateTime;
  * 「今日の体調チェック」のような毎日の記録ではなく、身長・体重・血圧など
  * 本人が随時編集するベースライン情報を1人1行で保持する。
  * BMIは身長・体重から都度計算するため、ここでは保持しない(HealthProfileService参照)。
+ *
+ * 以前は「普段のストレス度(stress_level)」も項目として持っていたが、労働安全衛生法上の
+ * ストレスチェック制度(第66条の10)と紛らわしい外形を作らないため、アプリからは
+ * 完全に削除した(docs/health-audit-legal-checklist.md 参照)。DB上の`stress_level`列自体は
+ * 既存データ保護のため残しているが、このEntityからは参照しない。
  */
 @Entity
 @Table(
@@ -66,10 +71,6 @@ public class HealthProfile {
     /** 平均睡眠時間(時間) */
     @Column(name = "avg_sleep_hours")
     private Double avgSleepHours;
-
-    /** 普段のストレス度(1〜5) */
-    @Column(name = "stress_level")
-    private Integer stressLevel;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "smoking_status", length = 32)

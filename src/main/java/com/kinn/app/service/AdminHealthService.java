@@ -85,7 +85,6 @@ public class AdminHealthService {
         double scoreSum = 0; int scoreN = 0;
         double sleepSum = 0; int sleepN = 0;
         double fatigueSum = 0; int fatigueN = 0;
-        double stressSum = 0; int stressN = 0;
         double overtimeSum = 0; int overtimeN = 0;
         long alertTotal = 0;
 
@@ -95,7 +94,6 @@ public class AdminHealthService {
             if (agg.avgHealthScore != null) { scoreSum += agg.avgHealthScore; scoreN++; }
             if (agg.avgSleepHours != null) { sleepSum += agg.avgSleepHours; sleepN++; }
             if (agg.avgFatigueLevel != null) { fatigueSum += agg.avgFatigueLevel; fatigueN++; }
-            if (agg.avgStressLevel != null) { stressSum += agg.avgStressLevel; stressN++; }
             overtimeSum += agg.overtimeHours; overtimeN++;
             alertTotal += agg.alertCount;
 
@@ -114,7 +112,6 @@ public class AdminHealthService {
                 .avgHealthScore(avgOrNull(scoreSum, scoreN))
                 .avgSleepHours(avgOrNull(sleepSum, sleepN))
                 .avgFatigueLevel(avgOrNull(fatigueSum, fatigueN))
-                .avgStressLevel(avgOrNull(stressSum, stressN))
                 .avgOvertimeHours(avgOrNull(overtimeSum, overtimeN))
                 .alertCount(alertTotal)
                 .departments(departments)
@@ -138,7 +135,6 @@ public class AdminHealthService {
         double scoreSum = 0; int scoreN = 0;
         double sleepSum = 0; int sleepN = 0;
         double fatigueSum = 0; int fatigueN = 0;
-        double stressSum = 0; int stressN = 0;
         double overtimeSum = 0; int overtimeN = 0;
         long alertTotal = 0;
 
@@ -146,7 +142,6 @@ public class AdminHealthService {
             if (agg.avgHealthScore != null) { scoreSum += agg.avgHealthScore; scoreN++; }
             if (agg.avgSleepHours != null) { sleepSum += agg.avgSleepHours; sleepN++; }
             if (agg.avgFatigueLevel != null) { fatigueSum += agg.avgFatigueLevel; fatigueN++; }
-            if (agg.avgStressLevel != null) { stressSum += agg.avgStressLevel; stressN++; }
             overtimeSum += agg.overtimeHours; overtimeN++;
             alertTotal += agg.alertCount;
         }
@@ -159,7 +154,6 @@ public class AdminHealthService {
                 .avgHealthScore(avgOrNull(scoreSum, scoreN))
                 .avgSleepHours(avgOrNull(sleepSum, sleepN))
                 .avgFatigueLevel(avgOrNull(fatigueSum, fatigueN))
-                .avgStressLevel(avgOrNull(stressSum, stressN))
                 .avgOvertimeHours(avgOrNull(overtimeSum, overtimeN))
                 .alertCount(alertTotal)
                 .build();
@@ -172,16 +166,14 @@ public class AdminHealthService {
         double scoreSum = 0; int scoreN = 0;
         double sleepSum = 0; int sleepN = 0;
         double fatigueSum = 0; int fatigueN = 0;
-        double stressSum = 0; int stressN = 0;
 
         for (HealthCheck c : checks) {
             HealthScoreDto score = healthScoreService.calculate(
-                    c.getCheckDate(), c.getSleepHours(), c.getFatigueLevel(), c.getStressLevel(),
+                    c.getCheckDate(), c.getSleepHours(), c.getFatigueLevel(),
                     c.getExerciseMinutes(), c.getCondition());
             if (score.isHasData()) { scoreSum += score.getTotalScore(); scoreN++; }
             if (c.getSleepHours() != null) { sleepSum += c.getSleepHours(); sleepN++; }
             if (c.getFatigueLevel() != null) { fatigueSum += c.getFatigueLevel(); fatigueN++; }
-            if (c.getStressLevel() != null) { stressSum += c.getStressLevel(); stressN++; }
         }
 
         AttendanceRangeStatsDto attendance = attendanceService.getRangeStats(employeeId, from, to);
@@ -192,7 +184,6 @@ public class AdminHealthService {
                 avgOrNull(scoreSum, scoreN),
                 avgOrNull(sleepSum, sleepN),
                 avgOrNull(fatigueSum, fatigueN),
-                avgOrNull(stressSum, stressN),
                 attendance.getOvertimeHours(),
                 alertCount);
     }
@@ -207,18 +198,16 @@ public class AdminHealthService {
         final Double avgHealthScore;
         final Double avgSleepHours;
         final Double avgFatigueLevel;
-        final Double avgStressLevel;
         final double overtimeHours;
         final long alertCount;
 
         EmployeeHealthAggregate(String department, Double avgHealthScore, Double avgSleepHours,
-                                 Double avgFatigueLevel, Double avgStressLevel,
+                                 Double avgFatigueLevel,
                                  double overtimeHours, long alertCount) {
             this.department = department;
             this.avgHealthScore = avgHealthScore;
             this.avgSleepHours = avgSleepHours;
             this.avgFatigueLevel = avgFatigueLevel;
-            this.avgStressLevel = avgStressLevel;
             this.overtimeHours = overtimeHours;
             this.alertCount = alertCount;
         }

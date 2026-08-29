@@ -63,7 +63,7 @@ public class HealthAnalysisService {
             Integer score = null;
             if (c != null) {
                 HealthScoreDto scoreDto = healthScoreService.calculate(
-                        d, c.getSleepHours(), c.getFatigueLevel(), c.getStressLevel(),
+                        d, c.getSleepHours(), c.getFatigueLevel(),
                         c.getExerciseMinutes(), c.getCondition());
                 if (scoreDto.isHasData()) score = scoreDto.getTotalScore();
             }
@@ -74,7 +74,6 @@ public class HealthAnalysisService {
                     .overtimeHours(a != null ? round2(a.getOvertimeMinutes() / 60.0) : null)
                     .sleepHours(c != null ? c.getSleepHours() : null)
                     .fatigueLevel(c != null ? c.getFatigueLevel() : null)
-                    .stressLevel(c != null ? c.getStressLevel() : null)
                     .healthScore(score)
                     .build());
         }
@@ -93,8 +92,6 @@ public class HealthAnalysisService {
         int lowOtScoreN = 0, highOtScoreN = 0;
         double shortSleepFatigueSum = 0, enoughSleepFatigueSum = 0;
         int shortSleepFatigueN = 0, enoughSleepFatigueN = 0;
-        double highOtStressSum = 0, lowOtStressSum = 0;
-        int highOtStressN = 0, lowOtStressN = 0;
 
         for (HealthAnalysisPointDto p : points) {
             boolean highOt = p.getOvertimeHours() != null && p.getOvertimeHours() >= HIGH_OVERTIME_DAY_THRESHOLD_HOURS;
@@ -111,10 +108,6 @@ public class HealthAnalysisService {
                     enoughSleepFatigueSum += p.getFatigueLevel(); enoughSleepFatigueN++;
                 }
             }
-            if (p.getStressLevel() != null) {
-                if (highOt) { highOtStressSum += p.getStressLevel(); highOtStressN++; }
-                else if (lowOt) { lowOtStressSum += p.getStressLevel(); lowOtStressN++; }
-            }
         }
 
         return HealthAnalysisSummaryDto.builder()
@@ -122,8 +115,6 @@ public class HealthAnalysisService {
                 .avgHealthScoreHighOvertime(avgOrNull(highOtScoreSum, highOtScoreN))
                 .avgFatigueShortSleep(avgOrNull(shortSleepFatigueSum, shortSleepFatigueN))
                 .avgFatigueEnoughSleep(avgOrNull(enoughSleepFatigueSum, enoughSleepFatigueN))
-                .avgStressHighOvertime(avgOrNull(highOtStressSum, highOtStressN))
-                .avgStressLowOvertime(avgOrNull(lowOtStressSum, lowOtStressN))
                 .build();
     }
 

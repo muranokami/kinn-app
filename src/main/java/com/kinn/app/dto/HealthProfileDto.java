@@ -25,7 +25,6 @@ public class HealthProfileDto {
     private Double bodyTemperature;
     private Integer exerciseMinutes;
     private Double avgSleepHours;
-    private Integer stressLevel;
     private SmokingStatus smokingStatus;
     private DrinkingStatus drinkingStatus;
     private String healthMemo;

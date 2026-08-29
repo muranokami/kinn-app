@@ -46,7 +46,6 @@ public class HealthCheckService {
         entity.setCondition(dto.getCondition());
         entity.setSleepHours(dto.getSleepHours());
         entity.setFatigueLevel(dto.getFatigueLevel());
-        entity.setStressLevel(dto.getStressLevel());
         entity.setExerciseMinutes(dto.getExerciseMinutes());
         entity.setBodyTemperature(dto.getBodyTemperature());
         entity.setMemo(dto.getMemo());
@@ -62,7 +61,6 @@ public class HealthCheckService {
                 .condition(c.getCondition())
                 .sleepHours(c.getSleepHours())
                 .fatigueLevel(c.getFatigueLevel())
-                .stressLevel(c.getStressLevel())
                 .exerciseMinutes(c.getExerciseMinutes())
                 .bodyTemperature(c.getBodyTemperature())
                 .memo(c.getMemo())

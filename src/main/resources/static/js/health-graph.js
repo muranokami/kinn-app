@@ -6,7 +6,6 @@ const METRIC_CONFIG = {
   weightKg: { label: "体重", color: "#3E6B52", unit: "kg" },
   sleepHours: { label: "睡眠時間", color: "#C33B2E", unit: "h" },
   fatigueLevel: { label: "疲労度", color: "#D9A441", unit: "", minFixed: 1, maxFixed: 5 },
-  stressLevel: { label: "ストレス度", color: "#9C2E23", unit: "", minFixed: 1, maxFixed: 5 },
   exerciseMinutes: { label: "運動時間", color: "#5B3E9C", unit: "分" },
 };
 

@@ -20,7 +20,6 @@ public class HealthCheckDto {
     private HealthConditionLevel condition;
     private Double sleepHours;
     private Integer fatigueLevel;
-    private Integer stressLevel;
     private Integer exerciseMinutes;
     private Double bodyTemperature;
     private String memo;
