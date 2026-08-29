@@ -1,0 +1,313 @@
+:root {
+  --paper: #FAF6EE;
+  --ink: #23272E;
+  --ink-soft: #5B5B52;
+  --kon: #1F3A5F;
+  --kon-deep: #16283F;
+  --kon-soft: #E7EEF7;
+  --shu: #C33B2E;
+  --shu-deep: #9C2E23;
+  --shu-soft: #FBEAE8;
+  --jade: #3E6B52;
+  --jade-deep: #2E5240;
+  --jade-soft: #E7F1EB;
+  --gold: #D9A441;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--ink);
+  font-family: "Hiragino Sans", "Yu Gothic UI", "Meiryo", -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, #fff7e6 0%, transparent 60%),
+    radial-gradient(1000px 500px at 100% 0%, var(--kon-soft) 0%, transparent 55%),
+    radial-gradient(900px 500px at 90% 100%, var(--jade-soft) 0%, transparent 55%),
+    linear-gradient(160deg, var(--paper) 0%, #F3EEE1 100%);
+  background-attachment: fixed;
+  position: relative;
+}
+
+/* --- 背景にふわふわ浮かぶ絵文字 --- */
+.floaties {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.floaty {
+  position: absolute;
+  left: calc(10% + (var(--i) * 15%));
+  bottom: -60px;
+  font-size: 28px;
+  opacity: 0.35;
+  animation: float-up 18s ease-in infinite;
+  animation-delay: calc(var(--i) * -3s);
+  filter: saturate(0.9);
+}
+@keyframes float-up {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.35; }
+  90%  { opacity: 0.35; }
+  100% { transform: translateY(-115vh) rotate(25deg); opacity: 0; }
+}
+
+.top-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 56px 28px 40px;
+}
+
+/* --- ヒーロー部 --- */
+.hero {
+  text-align: center;
+  margin-bottom: 44px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  font-size: 44px;
+  font-weight: 900;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+  color: var(--paper);
+  background: var(--shu);
+  border: 3px solid var(--shu-deep);
+  border-radius: 18px;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.12);
+  transform: rotate(-3deg);
+  animation: wiggle 5s ease-in-out infinite;
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.hero-title {
+  margin: 18px 0 6px;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  background: linear-gradient(90deg, var(--kon) 0%, var(--jade) 50%, var(--shu) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-caption {
+  margin: 0 0 20px;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.greeting {
+  display: inline-block;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--kon);
+  background: #fff;
+  border: 1px solid var(--kon-soft);
+  padding: 10px 22px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(31, 58, 95, 0.08);
+}
+
+.today-label {
+  margin: 10px 0 0;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+/* --- 情報チップ(現在時刻・ログイン時間・天気) --- */
+.info-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+}
+.info-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(35, 39, 46, 0.05);
+}
+.info-chip-icon { font-size: 15px; }
+.info-chip-label { color: var(--ink-soft); }
+.info-chip-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+#clockChip .info-chip-value { color: var(--kon); min-width: 4.5em; text-align: center; }
+
+/* --- タスク締め切りアラート(トップページ) --- */
+.task-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 620px;
+  margin: 0 auto 28px;
+  padding: 14px 20px;
+  text-decoration: none;
+  color: var(--shu-deep);
+  background: var(--shu-soft);
+  border: 1px solid rgba(195, 59, 46, 0.25);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(195, 59, 46, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.task-alert-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(195, 59, 46, 0.14);
+}
+.task-alert-icon { font-size: 18px; }
+.task-alert-arrow { margin-left: auto; font-weight: 700; }
+
+/* --- カード --- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-bottom: 40px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 28px 24px 24px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 24px rgba(35, 39, 46, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+  overflow: hidden;
+}
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  transition: border-color 0.18s ease;
+  pointer-events: none;
+}
+.card:hover {
+  box-shadow: 0 18px 34px rgba(35, 39, 46, 0.16);
+}
+.card-kon:hover::after  { border-color: var(--kon); }
+.card-shu:hover::after  { border-color: var(--shu); }
+.card-jade:hover::after { border-color: var(--jade); }
+
+.card-icon {
+  font-size: 40px;
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+.card:hover .card-icon {
+  transform: scale(1.18) rotate(-6deg);
+}
+
+.card-title {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.card-kon .card-title  { color: var(--kon); }
+.card-shu .card-title  { color: var(--shu); }
+.card-jade .card-title { color: var(--jade); }
+
+.card-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  min-height: 42px;
+}
+
+.card-cta {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+.card-kon .card-cta  { color: var(--kon);  background: var(--kon-soft); }
+.card-shu .card-cta  { color: var(--shu);  background: var(--shu-soft); }
+.card-jade .card-cta { color: var(--jade); background: var(--jade-soft); }
+
+/* --- 応援ボタン --- */
+.fun-strip {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.cheer-btn {
+  border: none;
+  cursor: pointer;
+  padding: 13px 28px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, var(--gold), var(--shu));
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(195, 59, 46, 0.25);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.cheer-btn:hover  { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(195, 59, 46, 0.32); }
+.cheer-btn:active { transform: translateY(1px) scale(0.98); }
+
+.cheer-msg {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+  min-height: 20px;
+}
+
+.top-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-soft);
+  opacity: 0.8;
+}
+
+#confetti {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@media (max-width: 820px) {
+  .cards { grid-template-columns: 1fr; }
+  .hero-title { font-size: 32px; }
+}

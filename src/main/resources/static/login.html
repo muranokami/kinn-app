@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - ログイン</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">ログイン</p>
+  </header>
+
+  <main class="container auth-container">
+    <form id="loginForm" class="auth-form">
+      <label class="field">会社名 または 会社コード
+        <input id="companyName" type="text" autocomplete="organization" placeholder="例: 株式会社サンプル / AB12CD34" required />
+      </label>
+      <p class="auth-note">
+        同じ会社名の他社と区別できない場合は、会社名の代わりに管理者から共有された「会社コード」を入力してください。
+      </p>
+      <label class="field">ユーザーID
+        <input id="loginId" type="text" autocomplete="username" required />
+      </label>
+      <label class="field">パスワード
+        <input id="password" type="password" autocomplete="current-password" required />
+      </label>
+
+      <div class="field field-actions auth-actions">
+        <button type="submit" class="btn btn-primary">ログイン</button>
+        <span class="status-msg" id="loginStatus"></span>
+      </div>
+
+      <p class="auth-switch">
+        アカウントをお持ちでない場合は <a href="register.html">新規登録</a>
+      </p>
+      <p class="auth-note">
+        パスワードをお忘れの場合は、社内の管理者(人事・総務担当)にご連絡ください。
+      </p>
+    </form>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

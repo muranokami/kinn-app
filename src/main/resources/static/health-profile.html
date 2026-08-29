@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 健康プロフィール</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/health-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="health-top.html" class="back-link" title="健康管理トップへ戻る">&laquo; 健康管理</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">健康プロフィール</p>
+  </header>
+
+  <main class="container">
+    <p style="color: var(--ink-soft); font-size: 13px; margin: 0 0 20px;">
+      身長・体重などの基本情報です。診断目的ではなく、ご自身の健康状態を記録・見える化するためのものです。
+    </p>
+
+    <section class="event-form-wrap">
+      <h2>基本情報</h2>
+      <form id="profileForm" class="event-form">
+        <label class="field">
+          身長(cm)
+          <input type="number" id="heightCm" step="0.1" min="0" />
+        </label>
+        <label class="field">
+          体重(kg)
+          <input type="number" id="weightKg" step="0.1" min="0" />
+        </label>
+        <label class="field">
+          BMI(自動計算)
+          <input type="text" id="bmiView" readonly style="background:#F5F2E9;" />
+        </label>
+        <label class="field">
+          血圧・上
+          <input type="number" id="systolicBp" step="1" min="0" />
+        </label>
+        <label class="field">
+          血圧・下
+          <input type="number" id="diastolicBp" step="1" min="0" />
+        </label>
+        <label class="field">
+          体温(℃)
+          <input type="number" id="bodyTemperature" step="0.1" min="0" />
+        </label>
+        <label class="field">
+          運動時間(分/日 目安)
+          <input type="number" id="exerciseMinutes" step="5" min="0" />
+        </label>
+        <label class="field">
+          平均睡眠時間(h)
+          <input type="number" id="avgSleepHours" step="0.5" min="0" />
+        </label>
+        <label class="field">
+          普段のストレス度(1〜5)
+          <input type="number" id="stressLevel" step="1" min="1" max="5" />
+        </label>
+        <label class="field">
+          喫煙状況
+          <select id="smokingStatus">
+            <option value="">-</option>
+            <option value="NONE">吸わない</option>
+            <option value="QUIT">禁煙中</option>
+            <option value="SMOKER">吸う</option>
+          </select>
+        </label>
+        <label class="field">
+          飲酒状況
+          <select id="drinkingStatus">
+            <option value="">-</option>
+            <option value="NONE">飲まない</option>
+            <option value="OCCASIONALLY">時々飲む</option>
+            <option value="REGULARLY">よく飲む</option>
+          </select>
+        </label>
+        <label class="field">
+          所属部署(任意・管理者集計用)
+          <input type="text" id="department" placeholder="例: 開発部" />
+        </label>
+        <label class="field field-grow">
+          健康メモ
+          <input type="text" id="healthMemo" placeholder="持病・気をつけていることなど自由に" />
+        </label>
+        <div class="field field-actions">
+          <button type="submit" class="btn btn-success">保存</button>
+        </div>
+      </form>
+      <span id="statusMsg" class="status-msg"></span>
+    </section>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/health-common.js"></script>
+  <script src="js/health-profile.js"></script>
+</body>
+</html>

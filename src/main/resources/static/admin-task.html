@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - タスク管理(管理者)</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/schedule-extra.css" />
+  <link rel="stylesheet" href="css/task-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="admin-top.html" class="back-link" title="管理者メニューへ戻る">&laquo; 管理者メニュー</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">タスク管理(管理者)</p>
+  </header>
+
+  <nav class="breadcrumb">
+    <a href="admin-top.html">管理者トップ</a><span class="crumb-sep">&rang;</span><span class="crumb-current">タスク管理</span>
+  </nav>
+
+  <main class="container">
+    <span class="admin-badge">管理者ビュー</span>
+    <p class="admin-note">
+      自分の会社に所属する部署・従業員のタスクのみを確認・登録・編集・削除できます。他社の情報にはアクセスできません。
+    </p>
+    <span id="statusMsg" class="status-msg"></span>
+
+    <!-- 部署・ユーザー・ステータスの絞り込み(⑫⑬⑭) -->
+    <div class="task-filter-bar">
+      <div class="filter-group">
+        部署：
+        <select id="departmentFilter">
+          <option value="">全部署</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        担当者：
+        <select id="userFilter">
+          <option value="">すべて</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        依頼者：
+        <select id="requesterFilter">
+          <option value="">すべて</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        優先度：
+        <select id="priorityFilter">
+          <option value="">すべて</option>
+          <option value="HIGH">高</option>
+          <option value="MEDIUM">中</option>
+          <option value="LOW">低</option>
+        </select>
+      </div>
+      <div class="filter-group status-tabs" id="statusTabs">
+        <button type="button" class="btn btn-secondary btn-sm is-active" data-status="">すべて</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-status="UNRESOLVED">未対応</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-status="IN_PROGRESS">対応中</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-status="COMPLETED">完了</button>
+      </div>
+    </div>
+
+    <!-- 日別表示(⑰⑱)。日付を指定するとその日に該当するタスクのみに絞り込む -->
+    <div class="task-filter-bar">
+      <div class="filter-group">
+        <button type="button" class="btn btn-secondary btn-sm" id="datePrevBtn">&laquo; 前日</button>
+        <input type="date" id="dateFilter" />
+        <button type="button" class="btn btn-secondary btn-sm" id="dateNextBtn">翌日 &raquo;</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="dateTodayBtn">今日</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="dateClearBtn">日付指定を解除(全期間)</button>
+      </div>
+    </div>
+
+    <!-- ダッシュボード集計(㉖⑱) -->
+    <section class="summary">
+      <h2 id="summaryTitle">タスク状況</h2>
+      <div class="summary-grid" id="summaryGrid">
+        <div class="summary-item"><span class="label">未対応</span><span class="value" id="s_unresolved">-</span><span class="unit">件</span></div>
+        <div class="summary-item"><span class="label">対応中</span><span class="value" id="s_inProgress">-</span><span class="unit">件</span></div>
+        <div class="summary-item"><span class="label">完了</span><span class="value" id="s_completed">-</span><span class="unit">件</span></div>
+        <div class="summary-item"><span class="label">期限超過</span><span class="value" id="s_overdue">-</span><span class="unit">件</span></div>
+        <div class="summary-item"><span class="label">総タスク</span><span class="value" id="s_total">-</span><span class="unit">件</span></div>
+      </div>
+    </section>
+
+    <!-- タスク一覧(⑪) -->
+    <section class="table-wrap event-list-wrap">
+      <h2 style="padding:14px 16px 0;font-size:15px;color:var(--kon);">タスク一覧</h2>
+      <table id="taskTable">
+        <thead>
+          <tr>
+            <th>担当者</th>
+            <th>部署</th>
+            <th>タスク</th>
+            <th>仕事内容</th>
+            <th>依頼者</th>
+            <th>状態</th>
+            <th>優先度</th>
+            <th>期限</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="taskTbody"></tbody>
+      </table>
+    </section>
+
+    <!-- ユーザー別進捗(㉗) -->
+    <section class="summary">
+      <h2>ユーザー別進捗</h2>
+      <div class="task-progress-grid" id="userProgressGrid"></div>
+    </section>
+
+    <!-- 部署別進捗(㉘)。全部署表示中のみ意味があるため、部署を絞っている間は隠す -->
+    <section class="summary" id="deptProgressSection">
+      <h2>部署別進捗</h2>
+      <div class="task-progress-grid" id="deptProgressGrid"></div>
+    </section>
+
+    <!-- タスク登録(⑦) -->
+    <section class="event-form-wrap">
+      <h2>タスクを登録・割り当て</h2>
+      <form id="createForm" class="event-form">
+        <div class="field">
+          <label for="c_department">部署</label>
+          <select id="c_department" required></select>
+        </div>
+        <div class="field">
+          <label for="c_assignedUser">担当ユーザー</label>
+          <select id="c_assignedUser" required></select>
+        </div>
+        <div class="field field-grow">
+          <label for="c_title">タスク名</label>
+          <input type="text" id="c_title" maxlength="120" required placeholder="例: A社見積書作成" />
+        </div>
+        <div class="field field-grow">
+          <label for="c_description">仕事内容</label>
+          <input type="text" id="c_description" maxlength="2000" placeholder="任意" />
+        </div>
+        <div class="field">
+          <label for="c_priority">優先度</label>
+          <select id="c_priority">
+            <option value="HIGH">高</option>
+            <option value="MEDIUM" selected>中</option>
+            <option value="LOW">低</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="c_startDate">開始日</label>
+          <input type="date" id="c_startDate" />
+        </div>
+        <div class="field">
+          <label for="c_dueDate">期限</label>
+          <input type="date" id="c_dueDate" />
+        </div>
+        <div class="field field-grow">
+          <label for="c_notes">備考</label>
+          <input type="text" id="c_notes" maxlength="500" placeholder="任意" />
+        </div>
+        <div class="field field-actions">
+          <button type="submit" class="btn btn-success">登録</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- タスク編集モーダル(⑲) -->
+  <div class="modal-overlay" id="editModal" hidden>
+    <div class="modal-box">
+      <h2>タスクを編集</h2>
+      <form id="editForm">
+        <div class="event-form">
+          <div class="field">
+            <label for="e_department">部署</label>
+            <select id="e_department" required></select>
+          </div>
+          <div class="field">
+            <label for="e_assignedUser">担当ユーザー</label>
+            <select id="e_assignedUser" required></select>
+          </div>
+          <div class="field field-grow">
+            <label for="e_title">タスク名</label>
+            <input type="text" id="e_title" maxlength="120" required />
+          </div>
+          <div class="field field-grow">
+            <label for="e_description">仕事内容</label>
+            <input type="text" id="e_description" maxlength="2000" />
+          </div>
+          <div class="field">
+            <label for="e_status">状態</label>
+            <select id="e_status">
+              <option value="UNRESOLVED">未対応</option>
+              <option value="IN_PROGRESS">対応中</option>
+              <option value="COMPLETED">完了</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="e_priority">優先度</label>
+            <select id="e_priority">
+              <option value="HIGH">高</option>
+              <option value="MEDIUM">中</option>
+              <option value="LOW">低</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="e_startDate">開始日</label>
+            <input type="date" id="e_startDate" />
+          </div>
+          <div class="field">
+            <label for="e_dueDate">期限</label>
+            <input type="date" id="e_dueDate" />
+          </div>
+          <div class="field field-grow">
+            <label for="e_notes">備考</label>
+            <input type="text" id="e_notes" maxlength="500" />
+          </div>
+        </div>
+        <div class="modal-close-row">
+          <span class="status-msg" id="editStatus"></span>
+          <button type="submit" class="btn btn-success">保存</button>
+          <button type="button" class="btn btn-danger" id="editDeleteBtn">削除</button>
+          <button type="button" class="btn btn-secondary" id="editCloseBtn">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 削除確認モーダル -->
+  <div class="modal-overlay" id="deleteConfirmModal" hidden>
+    <div class="modal-box">
+      <h2>このタスクを削除しますか？</h2>
+      <p class="schedule-scope-note" id="deleteConfirmSummary"></p>
+      <div class="modal-close-row">
+        <button type="button" class="btn btn-secondary" id="deleteConfirmCancelBtn">キャンセル</button>
+        <button type="button" class="btn btn-danger" id="deleteConfirmOkBtn">削除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/admin-task.js"></script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 新規登録</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+  <style>
+    .mode-toggle {
+      border: 1px solid var(--paper-line);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin: 0;
+    }
+    .mode-toggle legend {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      padding: 0 4px;
+    }
+    .mode-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--ink);
+      padding: 4px 0;
+    }
+    /* .field input のテキスト入力向けスタイル(枠線・パディング)がラジオボタンにも
+       かかってしまうため、ここだけ標準の見た目に戻す */
+    .mode-option input {
+      width: auto;
+      min-width: 0;
+      padding: 0;
+      border: none;
+      background: none;
+    }
+
+    .company-code-panel { text-align: center; }
+    .company-code-value {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: var(--kon);
+      background: var(--sat);
+      border: 1px dashed var(--kon);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin: 16px 0;
+      user-select: all;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">新規登録</p>
+  </header>
+
+  <main class="container auth-container">
+    <form id="registerForm" class="auth-form">
+      <fieldset class="field mode-toggle">
+        <legend>登録方法</legend>
+        <label class="mode-option">
+          <input type="radio" name="registerMode" value="CREATE" id="modeCreate" checked />
+          新しく会社を登録する
+        </label>
+        <label class="mode-option">
+          <input type="radio" name="registerMode" value="JOIN" id="modeJoin" />
+          既存の会社に参加する
+        </label>
+      </fieldset>
+
+      <!-- 「新しく会社を登録する」場合の項目 -->
+      <div id="createFields">
+        <label class="field">会社名
+          <input id="companyName" type="text" autocomplete="organization" />
+        </label>
+        <label class="field">部署(最初の部署名)
+          <input id="departmentNewInput" type="text" placeholder="例: 営業部" />
+        </label>
+      </div>
+
+      <!-- 「既存の会社に参加する」場合の項目 -->
+      <div id="joinFields" hidden>
+        <label class="field">会社コード
+          <input id="companyCode" type="text" autocomplete="off" placeholder="例: AB12CD34" maxlength="12" />
+        </label>
+        <label class="field" id="departmentSelectField">部署
+          <select id="departmentSelect">
+            <option value="">会社コードを入力すると部署が表示されます</option>
+          </select>
+        </label>
+        <p class="auth-note" id="companyLookupNote"></p>
+      </div>
+
+      <label class="field">ユーザーID
+        <input id="loginId" type="text" autocomplete="username" required />
+      </label>
+      <label class="field">パスワード
+        <input id="password" type="password" autocomplete="new-password" required />
+      </label>
+      <label class="field">パスワード確認
+        <input id="confirmPassword" type="password" autocomplete="new-password" required />
+      </label>
+      <label class="field">氏名
+        <input id="fullName" type="text" autocomplete="name" required />
+      </label>
+      <label class="field">メールアドレス
+        <input id="email" type="email" autocomplete="email" required />
+      </label>
+      <p class="auth-note">パスワードを忘れた際のセルフサービス再設定に使います。</p>
+
+      <div class="field field-actions auth-actions">
+        <button type="submit" class="btn btn-success">登録</button>
+        <span class="status-msg" id="registerStatus"></span>
+      </div>
+
+      <p class="auth-switch">
+        <a href="login.html">ログイン画面へ戻る</a>
+      </p>
+    </form>
+
+    <!-- 「新しく会社を登録する」で登録完了した直後だけ表示する、会社コードの案内画面。
+         この画面を離れると二度と自動表示されない(以後は管理者トップ画面で確認できる)ため、
+         自動遷移させずボタンで進んでもらう -->
+    <div class="auth-form company-code-panel" id="companyCodePanel" hidden>
+      <h2>登録が完了しました</h2>
+      <p>この会社の「会社コード」が発行されました。同僚が入社登録する際に必要です。安全な方法で共有し、必ず控えてください。</p>
+      <p class="company-code-value" id="companyCodeValue">-</p>
+      <p class="auth-note">この画面を閉じても、管理者メニューからいつでも確認できます。</p>
+      <div class="field field-actions auth-actions">
+        <button type="button" class="btn btn-secondary" id="companyCodeCopyBtn">コピー</button>
+        <button type="button" class="btn btn-primary" id="companyCodeProceedBtn">ログイン画面へ進む</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/register.js"></script>
+</body>
+</html>

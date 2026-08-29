@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 健康グラフ</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/health-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="health-top.html" class="back-link" title="健康管理トップへ戻る">&laquo; 健康管理</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">健康グラフ</p>
+  </header>
+
+  <main class="container">
+    <div class="period-tabs" id="periodTabs">
+      <button class="period-tab" data-period="1w">1週間</button>
+      <button class="period-tab" data-period="1m">1か月</button>
+      <button class="period-tab" data-period="3m">3か月</button>
+      <button class="period-tab" data-period="6m">6か月</button>
+    </div>
+
+    <div class="chart-toolbar">
+      <label class="field" style="flex-direction:row; align-items:center; gap:8px;">
+        表示項目
+        <select id="metricSelect" class="metric-select">
+          <option value="healthScore">健康スコア</option>
+          <option value="weightKg">体重(kg)</option>
+          <option value="sleepHours">睡眠時間(h)</option>
+          <option value="fatigueLevel">疲労度</option>
+          <option value="stressLevel">ストレス度</option>
+          <option value="exerciseMinutes">運動時間(分)</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="chart-wrap">
+      <canvas id="trendCanvas"></canvas>
+    </div>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/health-common.js"></script>
+  <script src="js/health-graph.js"></script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - タスク管理</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/schedule-extra.css" />
+  <link rel="stylesheet" href="css/task-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="index.html" class="back-link" title="トップページへ戻る">&laquo; トップ</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">タスク管理システム</p>
+  </header>
+
+  <main class="container">
+    <a href="admin-task.html" class="btn btn-secondary" id="adminTaskLink" hidden>部署タスク管理(管理者)</a>
+    <span id="statusMsg" class="status-msg"></span>
+
+    <!-- 締め切りアラート(本日締め切り・期限切れの、自分が担当する未完了タスク)。
+         人事評価・叱責の意図はなく、進捗管理の一般的な注意喚起として表示する -->
+    <section class="task-alert-panel" id="taskAlertPanel" hidden>
+      <h2 class="task-alert-panel-title">締め切りのお知らせ</h2>
+      <ul class="task-alert-list" id="taskAlertList"></ul>
+    </section>
+
+    <!-- マイタスク/部署別タスク一覧の切り替え(①④⑤⑥⑦⑧⑨⑩) -->
+    <section class="month-nav">
+      <div class="view-tabs" id="taskViewTabs">
+        <button type="button" class="btn btn-secondary is-active" id="tabMyTaskBtn" data-mode="my">マイタスク</button>
+        <button type="button" class="btn btn-secondary" id="tabDeptDayBtn" data-mode="deptDay">部署別タスク一覧</button>
+      </div>
+    </section>
+
+    <!-- ============================== マイタスク(③④㉞) ============================== -->
+    <div id="myTaskView">
+      <!-- ダッシュボード集計(㉖の縮小版。自分のタスクの内訳) -->
+      <section class="summary">
+        <h2>マイタスク状況</h2>
+        <div class="summary-grid" id="mySummaryGrid">
+          <div class="summary-item"><span class="label">未対応</span><span class="value" id="s_unresolved">-</span><span class="unit">件</span></div>
+          <div class="summary-item"><span class="label">対応中</span><span class="value" id="s_inProgress">-</span><span class="unit">件</span></div>
+          <div class="summary-item"><span class="label">完了</span><span class="value" id="s_completed">-</span><span class="unit">件</span></div>
+          <div class="summary-item"><span class="label">期限超過</span><span class="value" id="s_overdue">-</span><span class="unit">件</span></div>
+        </div>
+      </section>
+
+      <section class="month-nav">
+        <button type="button" class="btn btn-success" id="addTaskBtn">＋ タスクを追加</button>
+      </section>
+
+      <!-- タスク登録・編集フォーム(②⑥⑨⑫)。依頼者は常に自分自身。担当者は省略時=自分、
+           同じ部署のメンバーを選ぶと「依頼者:自分/担当者:他ユーザー」で登録できる -->
+      <section class="event-form-wrap" id="taskFormSection" hidden>
+        <h2 id="taskFormTitle">タスクを追加</h2>
+        <form id="taskForm" class="event-form">
+          <div class="field field-grow">
+            <label for="t_title">タスク名</label>
+            <input type="text" id="t_title" maxlength="120" required placeholder="例: 資料作成" />
+          </div>
+          <div class="field field-grow">
+            <label for="t_description">仕事内容</label>
+            <input type="text" id="t_description" maxlength="2000" placeholder="任意" />
+          </div>
+          <div class="field">
+            <label for="t_assignedUser">担当者</label>
+            <select id="t_assignedUser"></select>
+          </div>
+          <div class="field">
+            <label for="t_priority">優先度</label>
+            <select id="t_priority">
+              <option value="HIGH">高</option>
+              <option value="MEDIUM" selected>中</option>
+              <option value="LOW">低</option>
+            </select>
+          </div>
+          <div class="field" id="t_statusField" hidden>
+            <label for="t_status">ステータス</label>
+            <select id="t_status">
+              <option value="UNRESOLVED">未対応</option>
+              <option value="IN_PROGRESS">対応中</option>
+              <option value="COMPLETED">完了</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="task-checkbox-label"><input type="checkbox" id="t_singleDay" /> 1日タスクとして登録</label>
+          </div>
+          <div class="field" id="t_singleDayDateField" hidden>
+            <label for="t_singleDayDate">実施日</label>
+            <input type="date" id="t_singleDayDate" />
+          </div>
+          <div class="field" id="t_startDateField">
+            <label for="t_startDate">開始日</label>
+            <input type="date" id="t_startDate" />
+          </div>
+          <div class="field" id="t_dueDateField">
+            <label for="t_dueDate">期限</label>
+            <input type="date" id="t_dueDate" />
+          </div>
+          <div class="field field-grow">
+            <label for="t_notes">備考</label>
+            <input type="text" id="t_notes" maxlength="500" placeholder="任意" />
+          </div>
+          <div class="field field-actions">
+            <button type="submit" id="taskSubmitBtn" class="btn btn-success">保存</button>
+            <button type="button" id="taskCancelBtn" class="btn btn-secondary">キャンセル</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- マイタスク: 未対応/対応中/完了の3列(③㉞) -->
+      <section class="task-board">
+        <div class="task-column" data-status="UNRESOLVED">
+          <h2 class="task-column-title">未対応 <span class="task-column-count" id="col_unresolved_count">0</span></h2>
+          <div class="task-column-list" id="col_unresolved"></div>
+        </div>
+        <div class="task-column" data-status="IN_PROGRESS">
+          <h2 class="task-column-title">対応中 <span class="task-column-count" id="col_inProgress_count">0</span></h2>
+          <div class="task-column-list" id="col_inProgress"></div>
+        </div>
+        <div class="task-column" data-status="COMPLETED">
+          <h2 class="task-column-title">完了 <span class="task-column-count" id="col_completed_count">0</span></h2>
+          <div class="task-column-list" id="col_completed"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================== 部署別タスク一覧(①②③④⑤⑥⑦⑧⑨⑩⑪) ============================== -->
+    <div id="deptDayView" hidden>
+      <!-- 日付フィルター(⑩⑪日別表示との統合。既定は全期間=①部署別タスク一覧) -->
+      <section class="month-nav">
+        <div class="filter-group">
+          <button type="button" class="btn btn-secondary btn-sm" id="deptPrevDayBtn">&laquo; 前日</button>
+          <input type="date" id="deptDayInput" />
+          <button type="button" class="btn btn-secondary btn-sm" id="deptNextDayBtn">翌日 &raquo;</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="deptTodayBtn">今日</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="deptAllDatesBtn">全期間</button>
+        </div>
+      </section>
+      <!-- 担当者別(⑦)・ステータス別(⑧)フィルター -->
+      <section class="task-filter-bar">
+        <div class="filter-group">
+          担当者：
+          <select id="deptUserFilter">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div class="filter-group status-tabs" id="deptStatusTabs">
+          <button type="button" class="btn btn-secondary btn-sm is-active" data-status="">すべて</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-status="UNRESOLVED">未対応</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-status="IN_PROGRESS">対応中</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-status="COMPLETED">完了</button>
+        </div>
+      </section>
+      <p class="schedule-scope-note" id="deptDayNote"></p>
+
+      <!-- 部署全体の状況(⑨総タスク数・ステータス内訳・担当者ごとの件数) -->
+      <section class="summary">
+        <h2 id="deptDaySummaryTitle">部署のタスク状況</h2>
+        <div class="summary-grid" id="deptDaySummaryGrid">
+          <div class="summary-item"><span class="label">総タスク</span><span class="value" id="d_total">-</span><span class="unit">件</span></div>
+          <div class="summary-item"><span class="label">未対応</span><span class="value" id="d_unresolved">-</span><span class="unit">件</span></div>
+          <div class="summary-item"><span class="label">対応中</span><span class="value" id="d_inProgress">-</span><span class="unit">件</span></div>
+          <div class="summary-item"><span class="label">完了</span><span class="value" id="d_completed">-</span><span class="unit">件</span></div>
+          <div class="summary-item"><span class="label">期限超過</span><span class="value" id="d_overdue">-</span><span class="unit">件</span></div>
+        </div>
+        <div class="task-progress-grid" id="deptUserCountGrid"></div>
+      </section>
+
+      <!-- 表示形式の切り替え: 一覧(①タスク名/担当者/状態/期限のテーブル)/ステータス別(⑬)/担当者別(⑭) -->
+      <section class="month-nav">
+        <div class="view-tabs" id="deptGroupTabs">
+          <button type="button" class="btn btn-secondary btn-sm is-active" data-group="table">一覧</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-group="status">ステータス別</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-group="user">担当者別</button>
+        </div>
+      </section>
+
+      <!-- 一覧表示(①「タスク名・担当者・状態・期限」を必ず並べる) -->
+      <section class="table-wrap event-list-wrap" id="deptTableView">
+        <table id="deptTaskTable">
+          <thead>
+            <tr>
+              <th>タスク名</th>
+              <th>担当者</th>
+              <th>依頼者</th>
+              <th>状態</th>
+              <th>優先度</th>
+              <th>期限</th>
+            </tr>
+          </thead>
+          <tbody id="deptTaskTbody"></tbody>
+        </table>
+      </section>
+
+      <!-- ステータス別表示(⑬) -->
+      <section class="task-board" id="deptStatusGroupView" hidden>
+        <div class="task-column" data-status="UNRESOLVED">
+          <h2 class="task-column-title">未対応 <span class="task-column-count" id="dcol_unresolved_count">0</span></h2>
+          <div class="task-column-list" id="dcol_unresolved"></div>
+        </div>
+        <div class="task-column" data-status="IN_PROGRESS">
+          <h2 class="task-column-title">対応中 <span class="task-column-count" id="dcol_inProgress_count">0</span></h2>
+          <div class="task-column-list" id="dcol_inProgress"></div>
+        </div>
+        <div class="task-column" data-status="COMPLETED">
+          <h2 class="task-column-title">完了 <span class="task-column-count" id="dcol_completed_count">0</span></h2>
+          <div class="task-column-list" id="dcol_completed"></div>
+        </div>
+      </section>
+
+      <!-- 担当者別表示(⑭) -->
+      <section id="deptUserGroupView" hidden>
+        <div id="deptUserGroupList"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- タスク詳細モーダル(⑰) -->
+  <div class="modal-overlay" id="detailModal" hidden>
+    <div class="modal-box">
+      <h2 id="detailTitle">タスクの詳細</h2>
+      <dl class="detail-grid" id="detailGrid"></dl>
+      <div class="modal-close-row">
+        <label class="task-status-inline" id="detailStatusChangeWrap" hidden>
+          ステータス変更:
+          <select id="detailStatusSelect">
+            <option value="UNRESOLVED">未対応</option>
+            <option value="IN_PROGRESS">対応中</option>
+            <option value="COMPLETED">完了</option>
+          </select>
+        </label>
+        <button type="button" class="btn btn-secondary" id="detailEditBtn">編集</button>
+        <button type="button" class="btn btn-danger" id="detailDeleteBtn">削除</button>
+        <button type="button" class="btn btn-secondary" id="detailCloseBtn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 削除確認モーダル -->
+  <div class="modal-overlay" id="deleteConfirmModal" hidden>
+    <div class="modal-box">
+      <h2>このタスクを削除しますか？</h2>
+      <p class="schedule-scope-note" id="deleteConfirmSummary"></p>
+      <div class="modal-close-row">
+        <button type="button" class="btn btn-secondary" id="deleteConfirmCancelBtn">キャンセル</button>
+        <button type="button" class="btn btn-danger" id="deleteConfirmOkBtn">削除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/task.js"></script>
+</body>
+</html>

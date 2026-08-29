@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - AI献立履歴</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/health-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="meal.html" class="back-link" title="食事記録へ戻る">&laquo; 食事記録</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">AI献立履歴</p>
+  </header>
+
+  <main class="container">
+    <p style="color: var(--ink-soft); font-size: 14px; margin: 0 0 24px;">
+      AIが過去に提案した献立の履歴です。日付ごとに、保存した献立(⭐)があればそれを、無ければ最新の提案を表示します。
+    </p>
+
+    <div class="period-tabs" id="periodTabs">
+      <button class="period-tab" data-period="1w">1週間</button>
+      <button class="period-tab" data-period="1m">1か月</button>
+      <button class="period-tab" data-period="3m">3か月</button>
+    </div>
+
+    <div id="aiHistoryList" class="meal-history-list"></div>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/health-common.js"></script>
+  <script src="js/meal-ai-history.js"></script>
+</body>
+</html>

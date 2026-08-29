@@ -1,0 +1,190 @@
+/* ------------------------------------------------------------------
+   スケジュール管理(部署別・カレンダー表示)専用スタイル。
+   既存の style.css / attendance-extra.css / health-extra.css は変更しない。
+   .calendar-grid / .calendar-cell / .modal-overlay / .detail-grid / .category-* などの
+   基本クラスはそれらのファイルで定義済みのものをそのまま再利用する。
+------------------------------------------------------------------- */
+
+.calendar-title {
+  font-size: 16px;
+  color: var(--kon);
+  margin: 0 0 10px;
+}
+
+/* --- 今日の予定パネル(⑰) --- */
+.today-panel {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.today-panel h2 {
+  font-size: 15px;
+  margin: 0 0 10px;
+  color: var(--kon);
+}
+.today-events {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.today-event-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  background: #FCFAF4;
+}
+.today-event-time {
+  font-weight: 700;
+  color: var(--kon);
+  min-width: 70px;
+}
+.today-event-title { font-weight: 600; }
+.today-event-who { color: var(--ink-soft); }
+
+/* --- カレンダーセル内の予定表示(③⑤) --- */
+.schedule-cell {
+  min-height: 104px;
+  cursor: default;
+}
+.schedule-cell:hover { box-shadow: none; }
+/* 日付クリックで予定を追加できるセル(⑫)。カレンダー上に「クリックできる」ことを示す */
+.schedule-cell.is-day-clickable { cursor: pointer; }
+.schedule-cell.is-day-clickable:hover { background: #FCFAF4; }
+.schedule-cell.is-today { outline: 2px solid var(--kon); outline-offset: -2px; }
+.schedule-cell-events {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+.schedule-cell-event {
+  font-size: 10.5px;
+  line-height: 1.35;
+  padding: 2px 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.schedule-cell-event:hover { filter: brightness(0.95); }
+.schedule-cell-more {
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  padding: 2px 5px;
+}
+
+/* --- スケジュール追加・編集フォームの「種類」選択(②⑪) --- */
+.radio-group {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 400;
+  cursor: pointer;
+}
+.radio-option input[disabled] { cursor: not-allowed; }
+#typeField.is-locked .radio-option { opacity: 0.6; }
+
+/* --- 部署共有予定一覧の行内操作ボタン(⑭⑮⑯登録者本人・管理者のみ表示) --- */
+.dsr-actions .btn-sm + .btn-sm { margin-left: 4px; }
+
+/* --- 部署選択・表示切り替え(①④) --- */
+.view-tabs {
+  display: flex;
+  gap: 6px;
+}
+.view-tabs .btn.is-active {
+  background: var(--kon);
+  color: #fff;
+}
+.view-tabs .btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .calendar-grid { gap: 3px; }
+  .calendar-cell { min-height: 76px; padding: 4px; font-size: 10px; }
+  .schedule-cell-event { font-size: 9.5px; }
+}
+
+/* ------------------------------------------------------------------
+   個人予定と部署共有予定の区別(⑫⑬)。
+   カレンダーセル内の1件(.schedule-cell-event)・一覧行の両方に、
+   scheduleTypeに応じた左ボーダー色を重ねて視覚的に区別する
+   (category-*の背景色はそのまま活かし、上書きしない)。
+------------------------------------------------------------------- */
+.schedule-cell-event.schedule-type-PERSONAL {
+  border-left: 3px solid var(--ink-soft, #8a8577);
+}
+.schedule-cell-event.schedule-type-DEPARTMENT {
+  border-left: 3px solid var(--kon);
+  font-weight: 600;
+}
+
+.type-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+.type-badge-personal { background: #EFEDE5; color: var(--ink-soft, #6b6656); }
+.type-badge-department { background: var(--kon); color: #fff; }
+
+/* --- 表示切り替えタブ(個人/部署/すべて)の下に出す補足(④⑨⑳㉒) --- */
+.schedule-scope-note {
+  font-size: 12.5px;
+  color: var(--ink-soft, #6b6656);
+  margin: -4px 0 14px;
+}
+
+/* --- 部署共有スケジュール一覧(⑥⑱⑳)。誰の予定かより「部署として何が予定されているか」を
+   優先し、タイトル・日時・場所を大きく見せる ---------------------------------------------- */
+.dept-schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dept-schedule-row {
+  display: grid;
+  grid-template-columns: 90px 110px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.dept-schedule-row .dsr-date { font-weight: 700; color: var(--kon); }
+.dept-schedule-row .dsr-time { color: var(--ink-soft, #6b6656); font-size: 13px; }
+.dept-schedule-row .dsr-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dept-schedule-row .dsr-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dept-schedule-row .dsr-sub { font-size: 12px; color: var(--ink-soft, #6b6656); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dept-schedule-row .dsr-actions { display: flex; gap: 6px; }
+/* 登録者(誰が入れたか)を他の補足情報と区別して見せる(一般ユーザーが登録した内容も含めて
+   管理者がひと目で分かるようにするため) */
+.dept-schedule-row .dsr-title .type-badge { margin-right: 6px; vertical-align: middle; }
+.dept-schedule-row .dsr-owner {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--kon);
+}
+
+@media (max-width: 640px) {
+  .dept-schedule-row { grid-template-columns: 1fr; }
+}

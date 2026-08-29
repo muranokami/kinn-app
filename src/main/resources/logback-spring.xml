@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ロギング設定。Spring Bootの標準コンソール出力(defaults.xml/console-appender.xml)は
+  そのまま維持しつつ、セキュリティ関連のイベント(認証失敗・権限拒否・アカウントロック等)を
+  logs/security.log にも集約する(項目8「ロギング・監視」)。
+
+  対象ロガー:
+  ・com.kinn.app.security.SECURITY_AUDIT … SecurityConfigの未認証(401)/認可エラー(403)ログ
+    (健康管理に限らず /api/admin/** 全体を対象にしている)
+  ・com.kinn.app.security … LoginAttemptListener(ログイン失敗回数・アカウントロック)等
+  ・com.kinn.app.audit.HealthAuditSecurityEventLogger … フィルタ層で拒否された
+    健康管理関連アクセス(HealthAuditAspectでは捕捉できないもの)
+
+  通常のアプリケーションログ(コンソール)には従来どおり全てのログが出力され続けるため、
+  このファイルを追加しても既存のログ出力・動作には影響しない。
+-->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <property name="SECURITY_LOG_FILE" value="${LOG_PATH:-logs}/security.log" />
+
+    <appender name="SECURITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${SECURITY_LOG_FILE}</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN:-%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${SECURITY_LOG_FILE}.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <!-- 保持期間はhealth_audit_logの保持期間設定とは別物(アプリログのローテーション設定)。
+                 必要に応じて調整すること -->
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="com.kinn.app.security" level="INFO" additivity="true">
+        <appender-ref ref="SECURITY_FILE" />
+    </logger>
+    <logger name="com.kinn.app.audit.HealthAuditSecurityEventLogger" level="INFO" additivity="true">
+        <appender-ref ref="SECURITY_FILE" />
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>

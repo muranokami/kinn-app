@@ -1,0 +1,96 @@
+/* ------------------------------------------------------------------
+   ログイン中ユーザー情報バー(auth-common.jsが.app-headerへ描画する)。
+   style.css自体は変更しない。
+------------------------------------------------------------------- */
+.auth-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  font-size: 13px;
+}
+.auth-bar-user {
+  font-weight: 700;
+  color: var(--kon);
+}
+.auth-bar-company {
+  color: var(--ink-soft);
+  padding-left: 10px;
+  border-left: 1px solid var(--paper-line);
+}
+
+/* --- ログイン・新規登録フォーム --- */
+.auth-container {
+  max-width: 420px;
+  padding-top: 48px;
+}
+.auth-form {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.auth-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.auth-form .field input {
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--ink);
+}
+.auth-form .field input:focus {
+  outline: none;
+  border-color: var(--kon);
+}
+.auth-actions {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 4px;
+}
+.auth-actions .btn { width: 100%; padding: 11px; font-size: 15px; }
+.auth-actions .status-msg { text-align: center; margin-left: 0; min-height: 16px; }
+.auth-switch {
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 4px 0 0;
+}
+.auth-switch a { color: var(--kon); font-weight: 600; }
+
+.auth-note {
+  font-size: 12px;
+  color: var(--ink-soft);
+  background: #FCFAF4;
+  border: 1px dashed var(--paper-line);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  margin: -6px 0 0;
+}
+.auth-note:empty { display: none; }
+
+/* --- スマホ幅対応。.app-headerはstyle.css側でflex-wrapを持たせているため、
+   幅が足りない場合はここ(.auth-bar)が折り返して2行目に来る。折り返した際に
+   margin-left: auto が中途半端な余白を作らないよう、幅いっぱいに広げて
+   左寄せにする(既存のブレークポイント900pxをstyle.css/health-extra.css/
+   task-extra.cssに揃える)。 --- */
+@media (max-width: 900px) {
+  .auth-bar {
+    margin-left: 0;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .auth-container { padding-top: 28px; }
+}

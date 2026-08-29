@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 勤怠管理</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/attendance-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="index.html" class="back-link" title="トップページへ戻る">&laquo; トップ</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">勤怠管理システム</p>
+  </header>
+
+  <main class="container">
+    <section class="period-nav">
+      <div class="period-nav-row">
+        <label class="closing-day-field">締め日
+          <select id="closingDaySelect"></select>
+        </label>
+        <button id="loadBtn" class="btn btn-primary">表示</button>
+        <button id="saveBtn" class="btn btn-success">保存</button>
+        <a id="csvLink" class="btn btn-secondary" href="#" download>CSV出力</a>
+        <a href="admin-attendance.html" class="btn btn-secondary">勤怠一覧(管理者)</a>
+      </div>
+      <div class="period-label" id="periodLabel">-</div>
+      <div class="period-nav-row">
+        <button id="prevPeriodBtn" class="btn btn-secondary">&laquo; 前の期間</button>
+        <button id="todayPeriodBtn" class="btn btn-secondary">今日</button>
+        <button id="nextPeriodBtn" class="btn btn-secondary">次の期間 &raquo;</button>
+        <span id="statusMsg" class="status-msg"></span>
+      </div>
+    </section>
+
+    <section class="table-wrap">
+      <table id="attendanceTable">
+        <thead>
+          <tr>
+            <th>日付</th>
+            <th>曜日</th>
+            <th>祝日</th>
+            <th>区分</th>
+            <th>出勤</th>
+            <th>退勤</th>
+            <th>休憩(分)</th>
+            <th>遅早</th>
+            <th>実働(h)</th>
+            <th>通常残業(h)</th>
+            <th>所定休日勤務(h)</th>
+            <th>所定休日残業(h)</th>
+            <th>法定休日勤務(h)</th>
+            <th>法定休日残業(h)</th>
+            <th>総残業(h)</th>
+            <th>深夜(h)</th>
+            <th>備考</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceTbody">
+          <!-- JSで行を生成 -->
+        </tbody>
+      </table>
+    </section>
+
+    <section class="summary">
+      <h2>月次集計</h2>
+      <div class="summary-grid" id="summaryGrid">
+        <div class="summary-item"><span class="label">所定労働時間</span><span class="value" id="s_scheduledWorkingHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">通常勤務時間</span><span class="value" id="s_regularHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">通常残業時間</span><span class="value" id="s_overtimeHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">所定休日勤務時間</span><span class="value" id="s_scheduledHolidayWorkHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">所定休日残業時間</span><span class="value" id="s_scheduledHolidayOvertimeHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">法定休日勤務時間</span><span class="value" id="s_statutoryHolidayWorkHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">法定休日残業時間</span><span class="value" id="s_statutoryHolidayOvertimeHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item summary-item-highlight"><span class="label">総残業時間</span><span class="value" id="s_totalOvertimeHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">深夜勤務時間</span><span class="value" id="s_totalNightHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">総実働時間</span><span class="value" id="s_totalActualWorkingHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">勤務日数</span><span class="value" id="s_workingDays">-</span><span class="unit">日</span></div>
+        <div class="summary-item"><span class="label">遅早回数</span><span class="value" id="s_lateOrEarlyCount">-</span><span class="unit">回</span></div>
+        <div class="summary-item"><span class="label">欠勤日数</span><span class="value" id="s_absenceDays">-</span><span class="unit">日</span></div>
+        <div class="summary-item"><span class="label">所定休日勤務日数</span><span class="value" id="s_scheduledHolidayWorkDays">-</span><span class="unit">日</span></div>
+        <div class="summary-item"><span class="label">有給使用日数</span><span class="value" id="s_paidLeaveDays">-</span><span class="unit">日</span></div>
+        <div class="summary-item"><span class="label">振休代休</span><span class="value" id="s_substituteOrCompensatoryDays">-</span><span class="unit">日</span></div>
+        <div class="summary-item"><span class="label">法定休日勤務日数</span><span class="value" id="s_statutoryHolidayWorkDays">-</span><span class="unit">日</span></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/attendance-period.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

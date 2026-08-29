@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - スケジュール管理(管理者)</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/attendance-extra.css" />
+  <link rel="stylesheet" href="css/schedule-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="admin-top.html" class="back-link" title="管理者メニューへ戻る">&laquo; 管理者メニュー</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">スケジュール管理(管理者)</p>
+  </header>
+
+  <nav class="breadcrumb" id="breadcrumb">
+    <a href="admin-top.html">管理者トップ</a><span class="crumb-sep">&rang;</span><span class="crumb-current">部署スケジュール</span>
+  </nav>
+
+  <main class="container">
+    <span class="admin-badge">管理者ビュー</span>
+    <p class="admin-note">
+      自分の会社に所属する部署・従業員のスケジュールのみを確認・登録できます。他社の情報にはアクセスできません。
+    </p>
+
+    <div class="department-filter-bar">
+      部署：
+      <select id="departmentFilter">
+        <option value="">全部署</option>
+      </select>
+    </div>
+
+    <section class="month-nav">
+      <div class="view-tabs">
+        <button type="button" class="btn btn-secondary is-active" id="viewMonthBtn">月</button>
+        <button type="button" class="btn btn-secondary" id="viewWeekBtn" disabled title="週表示は今後対応予定です">週</button>
+        <button type="button" class="btn btn-secondary" id="viewDayBtn" disabled title="日表示は今後対応予定です">日</button>
+      </div>
+      <button id="prevMonthBtn" class="btn btn-secondary">&laquo; 前月</button>
+      <button id="todayBtn" class="btn btn-secondary">今月</button>
+      <button id="nextMonthBtn" class="btn btn-secondary">次月 &raquo;</button>
+      <span id="statusMsg" class="status-msg"></span>
+    </section>
+
+    <!-- 本当の意味での「部署共有スケジュール」(⑥⑦⑧⑯⑰⑳㉑)。上の「スケジュールを登録」
+         (従業員個人の予定を1件ずつ/部署全員へ複製登録する既存機能)とは別に、1件のレコードを
+         部署全体で共有する予定を管理する。管理者のみ登録・編集・削除できる(⑧㉓)。 -->
+    <section class="table-wrap" id="sharedSection">
+      <h2>部署共有スケジュール<span id="sharedDeptLabel"></span></h2>
+      <p class="admin-note" id="sharedNote" hidden>
+        「全部署」表示中は、自社の全部署の部署共有スケジュール(一般ユーザーが登録した分を含む)をまとめて確認できます。
+      </p>
+
+      <!-- 登録先の部署はこのフォーム自身の「部署」で選ぶ(上の一覧フィルタ「全部署」とは独立)。
+           以前は上のフィルタで部署を選ばない限りこのフォーム自体が非表示になっており、
+           「部署共有スケジュールを登録できない」という不具合の原因になっていたため、
+           常時表示にしたうえで登録先を自分で選べるようにした -->
+      <form id="sharedCreateForm" class="event-form">
+        <div class="field">
+          <label for="s_department">部署</label>
+          <select id="s_department" required></select>
+        </div>
+        <div class="field">
+          <label for="s_eventDate">日付</label>
+          <input type="date" id="s_eventDate" required />
+        </div>
+        <div class="field">
+          <label for="s_startTime">開始</label>
+          <input type="time" id="s_startTime" />
+        </div>
+        <div class="field">
+          <label for="s_endTime">終了</label>
+          <input type="time" id="s_endTime" />
+        </div>
+        <div class="field field-grow">
+          <label for="s_title">タイトル</label>
+          <input type="text" id="s_title" maxlength="120" required placeholder="例: 営業部定例会" />
+        </div>
+        <div class="field">
+          <label for="s_category">分類</label>
+          <select id="s_category">
+            <option value="WORK">仕事</option>
+            <option value="MEETING" selected>会議</option>
+            <option value="PRIVATE">プライベート</option>
+            <option value="HEALTH">通院・健康</option>
+            <option value="OTHER">その他</option>
+          </select>
+        </div>
+        <div class="field field-grow">
+          <label for="s_location">場所</label>
+          <input type="text" id="s_location" maxlength="255" placeholder="例: 会議室A(任意)" />
+        </div>
+        <div class="field field-grow">
+          <label for="s_content">内容</label>
+          <input type="text" id="s_content" maxlength="255" placeholder="任意" />
+        </div>
+        <div class="field field-actions">
+          <button type="submit" class="btn btn-success">部署共有スケジュールを登録</button>
+        </div>
+      </form>
+
+      <div class="dept-schedule-list" id="sharedScheduleList"></div>
+    </section>
+
+    <section class="today-panel">
+      <h2 id="todayPanelTitle">今日の予定</h2>
+      <div id="todayEvents" class="today-events">
+        <p class="snack-empty">今日の予定はありません。</p>
+      </div>
+    </section>
+
+    <section class="table-wrap">
+      <h2 id="calendarTitle" class="calendar-title">-</h2>
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </section>
+
+    <section class="event-form-wrap">
+      <h2>スケジュールを登録</h2>
+      <form id="createForm" class="event-form">
+        <div class="field">
+          <label for="c_department">部署</label>
+          <select id="c_department" required></select>
+        </div>
+        <div class="field">
+          <label for="c_employee">担当者</label>
+          <select id="c_employee" required></select>
+        </div>
+        <div class="field">
+          <label for="c_eventDate">日付</label>
+          <input type="date" id="c_eventDate" required />
+        </div>
+        <div class="field">
+          <label for="c_startTime">開始</label>
+          <input type="time" id="c_startTime" />
+        </div>
+        <div class="field">
+          <label for="c_endTime">終了</label>
+          <input type="time" id="c_endTime" />
+        </div>
+        <div class="field field-grow">
+          <label for="c_title">タイトル</label>
+          <input type="text" id="c_title" maxlength="120" required placeholder="例: 月次営業会議" />
+        </div>
+        <div class="field">
+          <label for="c_category">分類</label>
+          <select id="c_category">
+            <option value="WORK">仕事</option>
+            <option value="MEETING">会議</option>
+            <option value="PRIVATE">プライベート</option>
+            <option value="HEALTH">通院・健康</option>
+            <option value="OTHER" selected>その他</option>
+          </select>
+        </div>
+        <div class="field field-grow">
+          <label for="c_location">場所</label>
+          <input type="text" id="c_location" maxlength="255" placeholder="任意" />
+        </div>
+        <div class="field field-grow">
+          <label for="c_memo">メモ</label>
+          <input type="text" id="c_memo" maxlength="255" placeholder="任意" />
+        </div>
+        <div class="field field-actions">
+          <button type="submit" class="btn btn-success">登録</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <!-- 予定編集モーダル(⑥⑭カレンダー上の予定をクリックすると開く) -->
+  <div class="modal-overlay" id="editModal" hidden>
+    <div class="modal-box">
+      <h2 id="editModalTitle">予定を編集</h2>
+      <dl class="detail-grid">
+        <dt>担当者</dt><dd id="eOwnerLabel">-</dd>
+        <dt>部署</dt><dd id="eDeptLabel">-</dd>
+      </dl>
+      <form id="editForm">
+        <div class="event-form">
+          <div class="field">
+            <label for="e_eventDate">日付</label>
+            <input type="date" id="e_eventDate" required />
+          </div>
+          <div class="field">
+            <label for="e_startTime">開始</label>
+            <input type="time" id="e_startTime" />
+          </div>
+          <div class="field">
+            <label for="e_endTime">終了</label>
+            <input type="time" id="e_endTime" />
+          </div>
+          <div class="field field-grow">
+            <label for="e_title">タイトル</label>
+            <input type="text" id="e_title" maxlength="120" required />
+          </div>
+          <div class="field">
+            <label for="e_category">分類</label>
+            <select id="e_category">
+              <option value="WORK">仕事</option>
+              <option value="MEETING">会議</option>
+              <option value="PRIVATE">プライベート</option>
+              <option value="HEALTH">通院・健康</option>
+              <option value="OTHER">その他</option>
+            </select>
+          </div>
+          <div class="field field-grow">
+            <label for="e_location">場所</label>
+            <input type="text" id="e_location" maxlength="255" />
+          </div>
+          <div class="field field-grow">
+            <label for="e_memo">メモ</label>
+            <input type="text" id="e_memo" maxlength="255" />
+          </div>
+        </div>
+        <div class="modal-close-row">
+          <span class="status-msg" id="editStatus"></span>
+          <button type="submit" class="btn btn-success">保存</button>
+          <button type="button" class="btn btn-danger" id="editDeleteBtn">削除</button>
+          <button type="button" class="btn btn-secondary" id="editCloseBtn">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 部署共有スケジュールの編集モーダル(⑯)。「キャンセル」は保存せずそのまま閉じる -->
+  <div class="modal-overlay" id="sharedEditModal" hidden>
+    <div class="modal-box">
+      <h2 id="sharedEditModalTitle">部署共有スケジュールを編集</h2>
+      <form id="sharedEditForm">
+        <div class="event-form">
+          <div class="field">
+            <label for="se_eventDate">日付</label>
+            <input type="date" id="se_eventDate" required />
+          </div>
+          <div class="field">
+            <label for="se_startTime">開始</label>
+            <input type="time" id="se_startTime" />
+          </div>
+          <div class="field">
+            <label for="se_endTime">終了</label>
+            <input type="time" id="se_endTime" />
+          </div>
+          <div class="field field-grow">
+            <label for="se_title">タイトル</label>
+            <input type="text" id="se_title" maxlength="120" required />
+          </div>
+          <div class="field">
+            <label for="se_category">分類</label>
+            <select id="se_category">
+              <option value="WORK">仕事</option>
+              <option value="MEETING">会議</option>
+              <option value="PRIVATE">プライベート</option>
+              <option value="HEALTH">通院・健康</option>
+              <option value="OTHER">その他</option>
+            </select>
+          </div>
+          <div class="field field-grow">
+            <label for="se_location">場所</label>
+            <input type="text" id="se_location" maxlength="255" />
+          </div>
+          <div class="field field-grow">
+            <label for="se_content">内容</label>
+            <input type="text" id="se_content" maxlength="255" />
+          </div>
+        </div>
+        <div class="modal-close-row">
+          <span class="status-msg" id="sharedEditStatus"></span>
+          <button type="submit" class="btn btn-success">保存</button>
+          <button type="button" class="btn btn-danger" id="sharedEditDeleteBtn">削除</button>
+          <button type="button" class="btn btn-secondary" id="sharedEditCloseBtn">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/schedule-calendar.js"></script>
+  <script src="js/admin-schedule.js"></script>
+</body>
+</html>

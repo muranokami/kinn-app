@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - トップページ</title>
+  <link rel="stylesheet" href="css/top.css" />
+  <link rel="stylesheet" href="css/break.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <!-- ふわふわ浮かぶ背景の飾り -->
+  <div class="floaties" aria-hidden="true">
+    <span class="floaty" style="--i:0;">⏰</span>
+    <span class="floaty" style="--i:1;">💪</span>
+    <span class="floaty" style="--i:2;">🗓️</span>
+    <span class="floaty" style="--i:3;">🌿</span>
+    <span class="floaty" style="--i:4;">☕</span>
+    <span class="floaty" style="--i:5;">✨</span>
+  </div>
+
+  <main class="top-wrap">
+    <header class="hero">
+      <div class="hero-badge">勤</div>
+      <h1 class="hero-title">Kinn App</h1>
+      <p class="hero-caption">勤怠・健康・スケジュールを、ひとつの場所で。</p>
+
+      <p id="greeting" class="greeting">こんにちは！</p>
+      <p id="todayLabel" class="today-label"></p>
+
+      <!-- 現在時刻・今回のログイン時間・天気の情報チップ -->
+      <div class="info-chips" id="infoChips">
+        <div class="info-chip" id="clockChip">
+          <span class="info-chip-icon" aria-hidden="true">🕐</span>
+          <span class="info-chip-value" id="clockValue">--:--:--</span>
+        </div>
+        <div class="info-chip" id="loginTimeChip">
+          <span class="info-chip-icon" aria-hidden="true">🔑</span>
+          <span class="info-chip-label">ログイン</span>
+          <span class="info-chip-value" id="loginTimeValue">-</span>
+        </div>
+        <div class="info-chip" id="weatherChip">
+          <span class="info-chip-icon" id="weatherIcon" aria-hidden="true">🌡️</span>
+          <span class="info-chip-value" id="weatherValue">天気を取得中...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 本日締め切り・期限切れの未完了タスクがある場合だけの軽量な通知(クリックでtask.htmlへ) -->
+    <a class="task-alert-banner" id="taskAlertBanner" href="task.html" hidden>
+      <span class="task-alert-icon" aria-hidden="true">📋</span>
+      <span id="taskAlertText"></span>
+      <span class="task-alert-arrow" aria-hidden="true">&rarr;</span>
+    </a>
+
+    <!-- 本日、健康チェックの傾向から注意喚起が発生した場合だけのアプリ内アラート(クリックでhealth-top.htmlへ)。
+         外部メール・Slackへは送らず、本人がこの画面を開いた時だけ表示する(HealthAlertService参照) -->
+    <a class="task-alert-banner" id="healthAlertBanner" href="health-top.html" hidden>
+      <span class="task-alert-icon" aria-hidden="true">💪</span>
+      <span id="healthAlertText"></span>
+      <span class="task-alert-arrow" aria-hidden="true">&rarr;</span>
+    </a>
+
+    <!-- 休憩機能(①勤務中のユーザーが休憩を開始できる)。状態はサーバー側
+         (AttendanceRecord.break_start_time/break_end_time/break_minutes)に保存されるため、
+         ページを再読み込みしてもブラウザを閉じても状態が失われない(⑪⑫)。
+         休憩は1日に何度でも分けて取れる(刻んで取る運用に対応)が、合計は上限(既定60分)を超えない -->
+    <section class="break-panel" id="breakPanel" hidden>
+      <!-- 通常表示: [休憩開始]ボタン。出勤時刻の入力は不要で、ログインしていれば誰でも押せる -->
+      <div class="break-idle" id="breakIdleBlock">
+        <button type="button" class="break-start-btn" id="breakStartBtn">☕ 休憩開始</button>
+        <p class="break-usage-hint" id="breakUsageHint" hidden></p>
+      </div>
+
+      <!-- 休憩中(③④)。その回に使える残り時間(前回までの使用分を差し引いた予算)を表示する -->
+      <div class="break-active" id="breakActiveBlock" hidden>
+        <div class="break-active-header">☕ 休憩中</div>
+        <div class="break-remaining" id="breakRemaining">--:--</div>
+        <div class="break-active-meta">
+          <span>休憩開始 <strong id="breakActiveStart">-</strong></span>
+          <span>終了予定 <strong id="breakActiveEnd">-</strong></span>
+        </div>
+        <button type="button" class="break-end-btn" id="breakEndBtn">休憩終了</button>
+      </div>
+
+      <!-- 本日の休憩予算(既定60分)を使い切った(㉑)。複数回に分けていた場合は合計を表示する -->
+      <div class="break-done" id="breakDoneBlock" hidden>
+        <div class="break-done-header">☕ 本日の休憩は終了</div>
+        <div class="break-done-meta">
+          <span>直近の休憩 <strong id="breakDoneStart">-</strong>〜<strong id="breakDoneEnd">-</strong></span>
+          <span>本日の合計 <strong id="breakDoneMinutes">-</strong></span>
+        </div>
+        <p class="break-done-note">勤怠へ反映済み</p>
+      </div>
+
+      <p class="break-status-msg" id="breakStatusMsg" hidden></p>
+    </section>
+
+    <section class="cards" id="cardArea">
+      <a class="card card-kon" href="attendance.html" data-tilt>
+        <span class="card-icon">⏰</span>
+        <h2 class="card-title">勤怠管理</h2>
+        <p class="card-desc">出退勤を記録して、月次の勤務時間をまとめて確認。</p>
+        <span class="card-cta">開く &rarr;</span>
+      </a>
+
+      <a class="card card-shu" href="health-top.html" data-tilt>
+        <span class="card-icon">💪</span>
+        <h2 class="card-title">健康管理</h2>
+        <p class="card-desc">体重・睡眠・歩数を記録して、毎日のコンディションを見える化。</p>
+        <span class="card-cta">開く &rarr;</span>
+      </a>
+
+      <a class="card card-jade" href="schedule.html" data-tilt>
+        <span class="card-icon">🗓️</span>
+        <h2 class="card-title">スケジュール管理</h2>
+        <p class="card-desc">予定を登録して、月のスケジュールをひと目でチェック。</p>
+        <span class="card-cta">開く &rarr;</span>
+      </a>
+
+      <a class="card card-kon" href="task.html" data-tilt>
+        <span class="card-icon">📋</span>
+        <h2 class="card-title">タスク管理</h2>
+        <p class="card-desc">自分のタスクを未対応・対応中・完了で管理。</p>
+        <span class="card-cta">開く &rarr;</span>
+      </a>
+    </section>
+
+    <section class="fun-strip">
+      <button id="cheerBtn" class="cheer-btn" type="button">今日もがんばろう！ 🎉</button>
+      <p id="cheerMsg" class="cheer-msg"></p>
+    </section>
+
+    <footer class="top-footer">
+      <p>勤 &mdash; 毎日をちょっと楽しく、きちんと管理。</p>
+    </footer>
+  </main>
+
+  <canvas id="confetti"></canvas>
+
+  <!-- 休憩60分経過アラート(⑤⑳)。音声・ブラウザ通知が使えない環境でも、この画面表示は必ず出す -->
+  <div class="break-alert-overlay" id="breakAlertOverlay" hidden>
+    <div class="break-alert-box">
+      <p class="break-alert-icon">⏰</p>
+      <h2>休憩時間が終了しました</h2>
+      <p id="breakAlertMessage">休憩時間60分が終了しました。<br />勤怠に休憩時間を反映しました。</p>
+      <button type="button" class="break-alert-close-btn" id="breakAlertCloseBtn">閉じる</button>
+    </div>
+  </div>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/top.js"></script>
+  <script src="js/break.js"></script>
+</body>
+</html>

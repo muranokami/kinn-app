@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - レシピ・調理方法</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/health-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="health-top.html" class="back-link" title="健康管理トップへ戻る">&laquo; 健康管理</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">レシピ・調理方法</p>
+  </header>
+
+  <main class="container">
+    <p style="color: var(--ink-soft); font-size: 14px; margin: 0 0 20px;">
+      よく作る料理を、材料・調理方法・調理手順つきで登録しておけます。1週間の献立作成や冷蔵庫の食材からの提案でも、ここに登録したレシピを優先的に活用できるようになります 🍳
+    </p>
+
+    <div class="field-actions" style="margin-bottom:20px;">
+      <button type="button" id="recipeNewBtn" class="btn btn-success">+ 新しいレシピを登録</button>
+      <span class="status-msg" id="recipeListStatus"></span>
+    </div>
+
+    <div id="recipeList" class="recipe-list"></div>
+  </main>
+
+  <!-- 登録・編集フォーム(モーダル風。画面下部に表示) -->
+  <div id="recipeFormPanel" class="recipe-form-panel" hidden>
+    <div class="recipe-form-inner">
+      <div class="recipe-form-head">
+        <h2 id="recipeFormTitle">レシピを登録</h2>
+        <button type="button" id="recipeFormCloseBtn" class="btn btn-secondary btn-sm">閉じる</button>
+      </div>
+
+      <form id="recipeForm">
+        <div class="event-form">
+          <label class="field field-grow">料理名<input id="rName" type="text" required placeholder="例: 鶏むね肉とキャベツの炒め物" /></label>
+        </div>
+        <div class="event-form" style="margin-top:12px;">
+          <label class="field">調理方法
+            <select id="rCookingMethod">
+              <option value="">未設定</option>
+            </select>
+          </label>
+          <label class="field">準備時間(分)<input id="rPrep" type="number" min="0" /></label>
+          <label class="field">調理時間(分)<input id="rCook" type="number" min="0" /></label>
+          <label class="field">難易度
+            <select id="rDifficulty">
+              <option value="">未設定</option>
+              <option value="1">★☆☆(かんたん)</option>
+              <option value="2">★★☆(ふつう)</option>
+              <option value="3">★★★(むずかしい)</option>
+            </select>
+          </label>
+        </div>
+        <div class="event-form" style="margin-top:12px;">
+          <label class="field field-grow">調理器具(カンマ区切り)<input id="rEquipment" type="text" placeholder="例: フライパン, 鍋" /></label>
+        </div>
+
+        <details class="meal-detail" style="margin-top:12px;">
+          <summary>栄養情報(任意・1人前目安)</summary>
+          <div class="event-form" style="margin-top:12px;">
+            <label class="field">カロリー(kcal)<input id="rCalories" type="number" min="0" /></label>
+            <label class="field">たんぱく質(g)<input id="rProtein" type="number" min="0" step="0.1" /></label>
+            <label class="field">脂質(g)<input id="rFat" type="number" min="0" step="0.1" /></label>
+            <label class="field">炭水化物(g)<input id="rCarbs" type="number" min="0" step="0.1" /></label>
+            <label class="field">食塩相当量(g)<input id="rSalt" type="number" min="0" step="0.1" /></label>
+          </div>
+        </details>
+
+        <details class="meal-detail" open>
+          <summary>材料</summary>
+          <div id="rIngredientList" class="recipe-ingredient-edit-list"></div>
+          <button type="button" id="rIngredientAddBtn" class="btn btn-secondary btn-sm" style="margin-top:8px;">+ 材料を追加</button>
+        </details>
+
+        <details class="meal-detail" open style="margin-top:12px;">
+          <summary>調理手順</summary>
+          <div id="rStepList" class="recipe-step-edit-list"></div>
+          <button type="button" id="rStepAddBtn" class="btn btn-secondary btn-sm" style="margin-top:8px;">+ 手順を追加</button>
+        </details>
+
+        <details class="meal-detail" style="margin-top:12px;">
+          <summary>作り置き情報(任意)</summary>
+          <div class="event-form" style="margin-top:12px;">
+            <label class="field"><input id="rStorageFridge" type="checkbox" style="width:auto;" /> 冷蔵保存できる</label>
+            <label class="field"><input id="rStorageFreezer" type="checkbox" style="width:auto;" /> 冷凍保存できる</label>
+            <label class="field">保存日数の目安<input id="rStorageDays" type="number" min="0" /></label>
+          </div>
+          <div class="event-form" style="margin-top:12px;">
+            <label class="field field-grow">再加熱方法<input id="rReheatMethod" type="text" placeholder="例: 電子レンジ600Wで2分" /></label>
+          </div>
+        </details>
+
+        <div class="event-form" style="margin-top:12px;">
+          <label class="field field-grow">メモ<input id="rMemo" type="text" /></label>
+        </div>
+
+        <div class="field field-actions" style="margin-top:16px;">
+          <button type="submit" class="btn btn-success">保存</button>
+          <span class="status-msg" id="recipeFormStatus"></span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/health-common.js"></script>
+  <script src="js/recipe-shared.js"></script>
+  <script src="js/recipe.js"></script>
+</body>
+</html>

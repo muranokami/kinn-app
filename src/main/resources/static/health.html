@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 健康管理</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="index.html" class="back-link" title="トップページへ戻る">&laquo; トップ</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">健康管理システム</p>
+  </header>
+
+  <main class="container">
+    <section class="month-nav">
+      <button id="prevMonthBtn" class="btn btn-secondary">&laquo; 前月</button>
+      <div class="month-picker">
+        <input type="number" id="yearInput" min="2000" max="2100" />
+        <span>年</span>
+        <select id="monthSelect"></select>
+        <span>月</span>
+      </div>
+      <button id="nextMonthBtn" class="btn btn-secondary">翌月 &raquo;</button>
+      <button id="loadBtn" class="btn btn-primary">読込</button>
+      <button id="saveBtn" class="btn btn-success">保存</button>
+      <span id="statusMsg" class="status-msg"></span>
+    </section>
+
+    <section class="table-wrap">
+      <table id="healthTable">
+        <thead>
+          <tr>
+            <th>日付</th>
+            <th>曜日</th>
+            <th>体重(kg)</th>
+            <th>睡眠(h)</th>
+            <th>歩数</th>
+            <th>運動(分)</th>
+            <th>血圧 上</th>
+            <th>血圧 下</th>
+            <th>体調</th>
+            <th>メモ</th>
+          </tr>
+        </thead>
+        <tbody id="healthTbody">
+          <!-- JSで行を生成 -->
+        </tbody>
+      </table>
+    </section>
+
+    <section class="summary">
+      <h2>月次集計</h2>
+      <div class="summary-grid" id="summaryGrid">
+        <div class="summary-item"><span class="label">記録日数</span><span class="value" id="s_recordedDays">-</span><span class="unit">日</span></div>
+        <div class="summary-item"><span class="label">平均体重</span><span class="value" id="s_avgWeightKg">-</span><span class="unit">kg</span></div>
+        <div class="summary-item"><span class="label">平均睡眠時間</span><span class="value" id="s_avgSleepHours">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">合計歩数</span><span class="value" id="s_totalSteps">-</span><span class="unit">歩</span></div>
+        <div class="summary-item"><span class="label">平均歩数</span><span class="value" id="s_avgSteps">-</span><span class="unit">歩/日</span></div>
+        <div class="summary-item"><span class="label">運動した日数</span><span class="value" id="s_exerciseDays">-</span><span class="unit">日</span></div>
+        <div class="summary-item"><span class="label">合計運動時間</span><span class="value" id="s_totalExerciseMinutes">-</span><span class="unit">分</span></div>
+        <div class="summary-item"><span class="label">平均血圧(上/下)</span><span class="value" id="s_avgBp">-</span><span class="unit"></span></div>
+        <div class="summary-item"><span class="label">好調だった日数</span><span class="value" id="s_goodConditionDays">-</span><span class="unit">日</span></div>
+        <div class="summary-item"><span class="label">不調だった日数</span><span class="value" id="s_badConditionDays">-</span><span class="unit">日</span></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/health.js"></script>
+</body>
+</html>

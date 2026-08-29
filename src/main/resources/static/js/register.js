@@ -1,0 +1,174 @@
+let companyLookupLoadedFor = null;
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("registerForm").addEventListener("submit", handleRegister);
+  document.getElementById("modeCreate").addEventListener("change", applyModeVisibility);
+  document.getElementById("modeJoin").addEventListener("change", applyModeVisibility);
+
+  const codeInput = document.getElementById("companyCode");
+  codeInput.addEventListener("blur", () => loadCompanyByCode(codeInput.value));
+  codeInput.addEventListener("change", () => loadCompanyByCode(codeInput.value));
+
+  document.getElementById("companyCodeCopyBtn").addEventListener("click", copyCompanyCode);
+  document.getElementById("companyCodeProceedBtn").addEventListener("click", () => {
+    window.location.href = "login.html";
+  });
+
+  applyModeVisibility();
+});
+
+function currentMode() {
+  return document.querySelector('input[name="registerMode"]:checked').value;
+}
+
+/** 「新しく会社を登録する」/「既存の会社に参加する」で入力項目の表示を切り替える */
+function applyModeVisibility() {
+  const isCreate = currentMode() === "CREATE";
+  document.getElementById("createFields").hidden = !isCreate;
+  document.getElementById("joinFields").hidden = isCreate;
+}
+
+async function readErrorMessage(res, fallback) {
+  try {
+    const body = await res.json();
+    return body?.message || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * 入力された会社コードから、参加先の会社名・部署の選択肢を取得する
+ * (「既存の会社に参加する」を選んだ場合のみ)。
+ */
+async function loadCompanyByCode(rawCode) {
+  const code = rawCode.trim().toUpperCase();
+  const select = document.getElementById("departmentSelect");
+  const note = document.getElementById("companyLookupNote");
+
+  if (!code) {
+    select.innerHTML = '<option value="">会社コードを入力すると部署が表示されます</option>';
+    note.textContent = "";
+    companyLookupLoadedFor = null;
+    return;
+  }
+  if (code === companyLookupLoadedFor) return;
+
+  try {
+    const res = await fetch(`/api/auth/company-lookup?companyCode=${encodeURIComponent(code)}`);
+    if (!res.ok) {
+      select.innerHTML = '<option value="">-</option>';
+      note.textContent = await readErrorMessage(res, "会社コードが正しくありません");
+      companyLookupLoadedFor = null;
+      return;
+    }
+    const lookup = await res.json();
+    companyLookupLoadedFor = code;
+
+    if (!lookup.departmentNames || lookup.departmentNames.length === 0) {
+      select.innerHTML = '<option value="">この会社にはまだ部署がありません</option>';
+      note.textContent = `「${lookup.companyName}」に参加します。まだ部署が登録されていないため、管理者に部署の追加を依頼してください。`;
+      return;
+    }
+    select.innerHTML = '<option value="">選択してください</option>' +
+      lookup.departmentNames.map((d) => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join("");
+    note.textContent = `「${lookup.companyName}」に参加します。所属する部署を選択してください。`;
+  } catch (e) {
+    console.error(e);
+    note.textContent = "会社コードの確認に失敗しました。";
+  }
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const statusEl = document.getElementById("registerStatus");
+  const mode = currentMode();
+
+  const loginId = document.getElementById("loginId").value.trim();
+  const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
+  const fullName = document.getElementById("fullName").value.trim();
+  const email = document.getElementById("email").value.trim();
+
+  const payload = { mode, loginId, password, confirmPassword, fullName, email };
+
+  if (mode === "CREATE") {
+    payload.companyName = document.getElementById("companyName").value.trim();
+    payload.departmentName = document.getElementById("departmentNewInput").value.trim();
+    if (!payload.companyName || !payload.departmentName) {
+      statusEl.textContent = "会社名・部署名を入力してください";
+      statusEl.classList.add("error");
+      return;
+    }
+  } else {
+    payload.companyCode = document.getElementById("companyCode").value.trim().toUpperCase();
+    payload.departmentName = document.getElementById("departmentSelect").value.trim();
+    if (!payload.companyCode || !payload.departmentName) {
+      statusEl.textContent = "会社コード・部署を入力してください";
+      statusEl.classList.add("error");
+      return;
+    }
+  }
+
+  statusEl.textContent = "";
+  statusEl.classList.remove("error");
+
+  if (!loginId || !password || !confirmPassword || !fullName || !email) {
+    statusEl.textContent = "すべての項目を入力してください";
+    statusEl.classList.add("error");
+    return;
+  }
+  if (password !== confirmPassword) {
+    statusEl.textContent = "パスワードが一致しません";
+    statusEl.classList.add("error");
+    return;
+  }
+
+  statusEl.textContent = "登録中...";
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      throw new Error(await readErrorMessage(res, "登録に失敗しました"));
+    }
+    const user = await res.json();
+
+    if (mode === "CREATE" && user.companyCode) {
+      // 会社コードはこの直後の応答でしか一度に確認できないわけではない(管理者トップにも
+      // 常設表示するが)、登録直後は控えてもらう案内を優先し、自動遷移はしない。
+      document.getElementById("registerForm").hidden = true;
+      document.getElementById("companyCodeValue").textContent = user.companyCode;
+      document.getElementById("companyCodePanel").hidden = false;
+      return;
+    }
+
+    statusEl.textContent = "登録しました。ログイン画面に移動します...";
+    statusEl.classList.remove("error");
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 800);
+  } catch (err) {
+    console.error(err);
+    statusEl.textContent = err.message || "登録に失敗しました";
+    statusEl.classList.add("error");
+  }
+}
+
+async function copyCompanyCode() {
+  const value = document.getElementById("companyCodeValue").textContent;
+  if (!value || value === "-") return;
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function escapeHtml(s) {
+  const div = document.createElement("div");
+  div.textContent = s ?? "";
+  return div.innerHTML;
+}

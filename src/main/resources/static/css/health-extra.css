@@ -1,0 +1,582 @@
+/* ------------------------------------------------------------------
+   健康管理(拡張機能)専用スタイル。
+   既存の style.css に定義済みの --paper / --ink / --kon / --shu / --jade などの
+   トークンをそのまま利用し、ここでは新規画面固有のコンポーネントのみを追加する。
+   style.css 自体は一切変更しない。
+------------------------------------------------------------------- */
+:root {
+  --kon-soft: #E7EEF7;
+  --shu-soft: #FBEAE8;
+  --jade-soft: #E7F1EB;
+  --gold: #D9A441;
+  --gold-soft: #FBF1DD;
+}
+
+/* --- 健康スコア表示 --- */
+.score-hero {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 26px 28px;
+  margin-bottom: 24px;
+}
+
+.score-ring {
+  position: relative;
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(var(--kon) calc(var(--pct, 0) * 1%), var(--paper-line) 0);
+  flex: none;
+}
+.score-ring::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: #fff;
+}
+.score-ring-inner {
+  position: relative;
+  text-align: center;
+  line-height: 1.1;
+}
+.score-ring-inner .score-num { font-size: 34px; font-weight: 800; color: var(--kon); font-variant-numeric: tabular-nums; }
+.score-ring-inner .score-denom { font-size: 12px; color: var(--ink-soft); }
+
+.score-meta { flex: 1 1 220px; }
+.score-meta .score-eyebrow { font-size: 12px; letter-spacing: 0.14em; color: var(--ink-soft); margin: 0 0 4px; }
+.score-meta .score-level { margin: 0; font-size: 24px; font-weight: 800; color: var(--shu); }
+.score-meta .score-note { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-soft); }
+
+.score-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.score-bar-item {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.score-bar-item .sb-label { font-size: 12px; color: var(--ink-soft); display: flex; justify-content: space-between; }
+.score-bar-item .sb-value { font-weight: 700; color: var(--kon); }
+.score-bar-track { margin-top: 8px; height: 8px; border-radius: 999px; background: var(--paper-line); overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 999px; background: var(--jade); transition: width 0.3s ease; }
+
+/* --- 体調チェック: 選択式ボタン --- */
+.pill-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill-btn {
+  border: 1px solid var(--paper-line);
+  background: #fff;
+  color: var(--ink-soft);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pill-btn.active { background: var(--kon); border-color: var(--kon); color: #fff; }
+
+.scale-group { display: flex; gap: 6px; }
+.scale-btn {
+  width: 38px; height: 38px;
+  border: 1px solid var(--paper-line);
+  background: #fff;
+  border-radius: 8px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.scale-btn.active { background: var(--shu); border-color: var(--shu-deep); color: #fff; }
+
+/* --- アラート --- */
+.alert-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.alert-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--paper-line);
+  background: var(--gold-soft);
+}
+.alert-item.severity-WARNING { background: var(--shu-soft); border-color: #EFC7C1; }
+.alert-item .alert-icon { font-size: 20px; }
+.alert-item .alert-body { flex: 1; }
+.alert-item .alert-type { font-size: 12px; font-weight: 700; color: var(--shu-deep); letter-spacing: 0.04em; }
+.alert-item .alert-message { margin: 3px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink); }
+.alert-item .alert-date { font-size: 11px; color: var(--ink-soft); margin-top: 4px; }
+.alert-empty { font-size: 13px; color: var(--ink-soft); padding: 14px 4px; }
+
+/* --- 期間タブ --- */
+.period-tabs { display: flex; gap: 6px; margin-bottom: 18px; }
+.period-tab {
+  border: 1px solid var(--paper-line);
+  background: #fff;
+  color: var(--ink-soft);
+  padding: 7px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.period-tab.active { background: var(--kon); border-color: var(--kon); color: #fff; }
+
+/* --- グラフ --- */
+.chart-toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.chart-wrap {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 28px;
+}
+.chart-wrap canvas { width: 100%; height: 320px; display: block; }
+.metric-select {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  padding: 7px 10px;
+  font-size: 13px;
+  background: #fff;
+}
+
+/* --- 分析: 集計カード --- */
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.compare-card {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.compare-card h3 { margin: 0 0 12px; font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+.compare-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px dashed var(--paper-line); }
+.compare-row:last-child { border-bottom: none; }
+.compare-row .cr-label { font-size: 12.5px; color: var(--ink-soft); }
+.compare-row .cr-value { font-size: 18px; font-weight: 700; color: var(--kon); font-variant-numeric: tabular-nums; }
+
+/* --- 管理者ダッシュボード ---
+   パンくず(.breadcrumb)・部署フィルタ(.department-filter-bar)・
+   見出しバッジ/注意書き(.admin-badge/.admin-note)・集計カード強調枠
+   (.summary-item-highlight)は、管理者トップ・勤怠管理・タスク管理・
+   スケジュール管理など健康管理と無関係な画面でも共通して使うため、
+   style.css側の「汎用UIコンポーネント」セクションへ移動した(CSS構成整理)。 --- */
+
+/* --- 管理者ダッシュボード: 未打刻アラート --- */
+.dashboard-alert-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.dashboard-alert-card {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+.dashboard-alert-card h2 {
+  font-size: 14px;
+  margin: 0 0 10px;
+  color: var(--kon);
+}
+.dashboard-alert-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.dashboard-alert-list li {
+  font-size: 13px;
+  padding: 6px 10px;
+  background: var(--shu-soft);
+  border-radius: var(--radius);
+  color: var(--shu-deep);
+}
+.dashboard-alert-empty {
+  background: transparent !important;
+  color: var(--ink-soft) !important;
+  padding: 6px 0 !important;
+}
+
+/* --- 従業員管理 --- */
+.employee-search-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.employee-search-form input { min-width: 160px; }
+.employee-row { cursor: pointer; }
+.employee-row:hover td { background: #FCFAF4; }
+.employee-row-disabled td { color: var(--ink-soft); text-decoration: line-through; }
+
+/* --- モーダル(.modal-overlay/.modal-box/.modal-close-row)・詳細表示(.detail-grid)は
+   管理者画面・タスク管理・スケジュール管理・食事記録など複数の画面で共用するため、
+   style.css側の「汎用UIコンポーネント」セクションへ移動した(CSS構成整理。
+   [hidden]属性とdisplayの優先順位に関する注意点もそちらのコメントを参照)。 --- */
+
+/* --- 食事記録: 入力カード --- */
+.meal-card {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+.meal-card h2 {
+  font-size: 15px;
+  margin: 0;
+  color: var(--kon);
+}
+.meal-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.meal-card-head .status-msg { margin-left: 0; }
+
+/* --- 食事記録: 表示モード(未編集時) --- */
+.meal-view-body {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.7;
+  white-space: pre-line;
+}
+.meal-view-body.is-empty { color: var(--ink-soft); }
+.meal-view-dish {
+  font-weight: 700;
+  color: var(--kon);
+  margin-bottom: 4px;
+}
+.meal-view-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* --- レシピ・調理方法(Phase 4) --- */
+.recipe-list { display: flex; flex-direction: column; gap: 14px; }
+.recipe-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+.recipe-card-detail {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--paper-line);
+}
+.recipe-detail-section { margin-bottom: 12px; }
+.recipe-detail-section:last-child { margin-bottom: 0; }
+.recipe-detail-section h3 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--kon);
+  margin: 0 0 6px;
+}
+.recipe-ingredient-list, .recipe-step-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.8;
+}
+.recipe-qty { color: var(--ink-soft); font-size: 12px; }
+
+.recipe-form-panel {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 2px solid var(--kon);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  padding: 20px 24px;
+  margin-top: 24px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.recipe-form-inner { max-width: 720px; margin: 0 auto; }
+.recipe-form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.recipe-form-head h2 { font-size: 16px; color: var(--kon); margin: 0; }
+
+.recipe-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.recipe-edit-row input[type="text"] { flex: 2; }
+.recipe-edit-row input[type="number"] { flex: 1; min-width: 0; }
+.recipe-step-no { font-size: 13px; color: var(--ink-soft); min-width: 20px; }
+.recipe-ingredient-edit-list, .recipe-step-edit-list { margin-top: 10px; }
+.meal-form .field textarea {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: #fff;
+  resize: vertical;
+  min-height: 44px;
+}
+.meal-detail { margin-top: 12px; }
+.meal-detail summary {
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  font-weight: 600;
+  outline: none;
+}
+.meal-detail summary:hover { color: var(--kon); }
+
+.snack-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+/* .snack-empty(空状態メッセージ)はスケジュール管理・管理者画面でも使い回すため
+   style.cssの「汎用UIコンポーネント」セクションへ移動した(CSS構成整理) */
+.snack-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--gold-soft);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+}
+.snack-row .snack-items { flex: 1; font-size: 13px; }
+.snack-row .snack-kcal { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+
+/* --- 食事記録: 今日の食事サマリー --- */
+.meal-summary-panel {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-top: 8px;
+}
+.meal-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+.meal-summary-item {
+  background: #FCFAF4;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.meal-summary-item .ms-title { font-size: 12.5px; font-weight: 700; color: var(--kon); margin-bottom: 6px; }
+.meal-summary-item .ms-body { font-size: 13px; color: var(--ink); line-height: 1.6; }
+
+/* --- 食事履歴 --- */
+.meal-history-list { display: flex; flex-direction: column; gap: 14px; }
+.meal-history-day {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+.mh-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--paper-line);
+}
+.mh-date { font-size: 15px; font-weight: 700; color: var(--kon); }
+.mh-kcal { font-size: 12.5px; color: var(--ink-soft); }
+.mh-row { display: flex; gap: 10px; padding: 3px 0; font-size: 13px; }
+.mh-icon { flex: none; width: 52px; color: var(--ink-soft); font-weight: 600; }
+.mh-text { color: var(--ink); line-height: 1.6; }
+
+/* --- 健康管理トップ: 今日の食事ウィジェット --- */
+.today-meal-widget {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 28px;
+}
+.tmw-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.tmw-title { font-size: 14px; font-weight: 700; color: var(--kon); }
+.tmw-link { font-size: 12.5px; color: var(--shu-deep); text-decoration: none; font-weight: 600; }
+.tmw-link:hover { text-decoration: underline; }
+.tmw-row { display: flex; gap: 10px; padding: 3px 0; font-size: 13px; }
+.tmw-icon { flex: none; width: 40px; color: var(--ink-soft); font-weight: 600; }
+.tmw-text { color: var(--ink); }
+.tmw-nutrition {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--paper-line);
+}
+.tmw-nutrition-item { display: flex; flex-direction: column; gap: 2px; }
+.tmw-n-label { font-size: 11px; color: var(--ink-soft); }
+.tmw-n-value { font-size: 17px; font-weight: 700; color: var(--kon); font-variant-numeric: tabular-nums; }
+.tmw-n-value small { font-size: 11px; font-weight: 500; color: var(--ink-soft); margin-left: 2px; }
+
+/* --- AI献立提案 --- */
+.ai-meal-panel {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-bottom: 24px;
+}
+.ai-meal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ai-meal-header h2 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--kon);
+}
+.ai-meal-summary { margin: 8px 0 0; font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+.ai-meal-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.ai-meal-note.is-fallback { color: var(--shu-deep); }
+.ai-meal-note.is-empty { display: none; }
+
+.ai-meal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.ai-meal-card {
+  background: #FCFAF4;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ai-meal-card-title { font-size: 13px; font-weight: 700; color: var(--kon); }
+.ai-meal-dish { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.4; }
+.ai-meal-ingredients { font-size: 12.5px; color: var(--ink-soft); line-height: 1.6; }
+.ai-meal-nutrition {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.ai-meal-nutrition span {
+  background: var(--kon-soft);
+  color: var(--kon);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.ai-meal-reason {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  padding-top: 6px;
+  border-top: 1px dashed var(--paper-line);
+}
+.ai-meal-reason strong { color: var(--ink); font-weight: 700; }
+.ai-meal-card-actions { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.ai-meal-card.is-registered { border-color: var(--jade); }
+.ai-meal-registered-badge { font-size: 11.5px; font-weight: 700; color: var(--jade-deep); }
+
+.ai-meal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.ai-meal-actions .btn-success.is-saved { background: var(--jade-deep); }
+
+.ai-meal-pref { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--paper-line); }
+.ai-meal-pref summary {
+  cursor: pointer;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  font-weight: 600;
+  outline: none;
+}
+.ai-meal-pref summary:hover { color: var(--kon); }
+.ai-meal-unavailable {
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 14px 4px;
+}
+
+@media (max-width: 900px) {
+  .score-hero { flex-direction: column; align-items: stretch; text-align: center; }
+  .score-ring { margin: 0 auto; }
+  .meal-summary-grid { grid-template-columns: 1fr; }
+  .ai-meal-grid { grid-template-columns: 1fr; }
+}
+
+/* --- 監査ログ画面(一般ユーザー専用ログ・管理者検索) --- */
+.audit-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  row-gap: 10px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.audit-filter-bar label { display: flex; align-items: center; gap: 6px; }
+.audit-filter-bar input[type="date"],
+.audit-filter-bar input[type="text"],
+.audit-filter-bar select {
+  padding: 7px 10px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.audit-retention-note {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin: 0 0 16px;
+}
+.audit-result-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+.audit-result-badge.is-success { background: var(--jade-soft); color: var(--jade-deep); }
+.audit-result-badge.is-denied { background: var(--shu-soft); color: var(--shu-deep); }
+.audit-result-badge.is-failure { background: var(--gold-soft); color: var(--shu-deep); }
+.audit-self-row { color: var(--ink-soft); }
+.audit-self-row .audit-self-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--kon);
+  margin-left: 6px;
+}

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.2</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.kinn</groupId>
+    <artifactId>kinn-app</artifactId>
+    <version>1.0.0</version>
+    <name>kinn-app</name>
+    <description>勤怠管理アプリ (Kinn)</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <!-- ローカルのJDK(24)でLombokのアノテーション処理を動かすため、
+             spring-boot-starter-parentが指定するデフォルトより新しいバージョンに固定 -->
+        <lombok.version>1.18.38</lombok.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- 健康管理の監査ログをAOP(@Aspect)で横断的に記録するために追加 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>kinn-app</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- 外付けボリューム等、AppleDoubleファイル(._*.class)が自動生成される環境では
+                         target/classes を走査するメインクラス自動検出がそれらのゴミファイルを
+                         読んで失敗することがあるため、明示的に指定してスキャンを回避する -->
+                    <mainClass>com.kinn.app.KinnApplication</mainClass>
+                    <!-- 同じ理由で、Springのコンポーネントスキャンが ._*.class を読んで
+                         落ちないように、それらを無視するシステムプロパティを立てて起動する -->
+                    <jvmArguments>-Dspring.classformat.ignore=true</jvmArguments>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <!-- 環境によっては、クラスパス経由の暗黙的なアノテーションプロセッサ検出が
+                         効かないことがあるため、明示的にLombokをプロセッサパスへ指定する -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- spring-boot-maven-plugin側と同じ理由(外付けボリュームが自動生成する
+                         AppleDoubleファイル ._*.class)で、テストクラスの自動検出が
+                         ._XxxTest.class をテストクラスとして拾って失敗することがあるため、
+                         明示的に除外する。通常の環境(AppleDoubleが生成されない)では
+                         該当ファイルが存在せず、このexcludeは何にもマッチしない -->
+                    <excludes>
+                        <exclude>**/._*</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

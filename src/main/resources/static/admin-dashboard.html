@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 管理者ダッシュボード</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/health-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="admin-top.html" class="back-link" title="管理者メニューへ戻る">&laquo; 管理者メニュー</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">管理者ダッシュボード</p>
+  </header>
+
+  <nav class="breadcrumb">
+    <a href="admin-top.html">管理者トップ</a><span class="crumb-sep">&rang;</span><span class="crumb-current">管理者ダッシュボード</span>
+  </nav>
+
+  <main class="container">
+    <span class="admin-badge">管理者ビュー</span>
+    <p class="admin-note" id="companyLabel">読み込み中...</p>
+
+    <div class="department-filter-bar">
+      部署：
+      <select id="departmentFilter">
+        <option value="">全部署</option>
+      </select>
+    </div>
+
+    <section class="summary" style="margin-top:0;">
+      <div class="summary-grid" id="summaryGrid">
+        <div class="summary-item"><span class="label">従業員数</span><span class="value" id="s_employeeCount">-</span><span class="unit">人</span></div>
+        <div class="summary-item"><span class="label">本日出勤</span><span class="value" id="s_presentToday">-</span><span class="unit">人</span></div>
+        <div class="summary-item"><span class="label">本日欠勤</span><span class="value" id="s_absentToday">-</span><span class="unit">人</span></div>
+        <div class="summary-item"><span class="label">本日休日勤務</span><span class="value" id="s_holidayWorkToday">-</span><span class="unit">人</span></div>
+        <div class="summary-item"><span class="label">未打刻</span><span class="value" id="s_unclocked">-</span><span class="unit">人</span></div>
+        <div class="summary-item"><span class="label">今月の総実働時間</span><span class="value" id="s_monthWorking">-</span><span class="unit">h</span></div>
+        <div class="summary-item summary-item-highlight"><span class="label">今月の総残業時間</span><span class="value" id="s_monthOvertime">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">通常残業</span><span class="value" id="s_regularOt">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">所定休日残業</span><span class="value" id="s_scheduledOt">-</span><span class="unit">h</span></div>
+        <div class="summary-item"><span class="label">法定休日残業</span><span class="value" id="s_statutoryOt">-</span><span class="unit">h</span></div>
+      </div>
+    </section>
+
+    <div class="dashboard-alert-grid">
+      <section class="dashboard-alert-card">
+        <h2>🚪 本日の未退勤</h2>
+        <ul id="missingClockOutList" class="dashboard-alert-list"></ul>
+      </section>
+      <section class="dashboard-alert-card">
+        <h2>❓ 本日の未出勤</h2>
+        <ul id="missingClockInList" class="dashboard-alert-list"></ul>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/admin-dashboard.js"></script>
+</body>
+</html>

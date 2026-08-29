@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 管理者メニュー</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+  <style>
+    .company-code-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--ink-soft);
+      background: #fff;
+      border: 1px solid var(--paper-line);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      margin-bottom: 20px;
+    }
+    .company-code-box strong {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 15px;
+      letter-spacing: 0.08em;
+      color: var(--kon);
+    }
+    .company-code-hint { margin-left: auto; font-size: 11.5px; color: var(--ink-soft); }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <a href="index.html" class="back-link" title="トップページへ戻る">&laquo; トップ</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">管理者メニュー</p>
+  </header>
+
+  <nav class="breadcrumb"><span class="crumb-current">管理者トップ</span></nav>
+
+  <main class="container">
+    <span class="admin-badge">管理者ビュー</span>
+    <p class="admin-note">
+      自分の会社に所属する従業員の勤怠のみを確認・管理できます。他社の情報にはアクセスできません。
+      健康・食事の個人情報はここでは扱いません。
+    </p>
+
+    <!-- 自社の会社コード表示(同僚の入社登録に必要な値。/api/auth/meから取得しADMINの場合のみ表示される) -->
+    <div class="company-code-box" id="companyCodeBox" hidden>
+      会社コード:
+      <strong id="companyCodeDisplay">-</strong>
+      <button type="button" class="btn btn-secondary btn-sm" id="companyCodeCopyBtn">コピー</button>
+      <span class="company-code-hint">同僚が入社登録する際に入力してもらう値です</span>
+    </div>
+
+    <section class="hub-grid">
+      <a class="hub-card" href="admin-dashboard.html">
+        <span class="hub-icon">🏢</span>
+        <h2 class="hub-title">管理者ダッシュボード</h2>
+        <p class="hub-desc">本日の出勤・欠勤・休日勤務・未打刻人数と、今月の勤務時間・残業時間。</p>
+      </a>
+      <a class="hub-card" href="admin-employees.html">
+        <span class="hub-icon">👥</span>
+        <h2 class="hub-title">従業員管理</h2>
+        <p class="hub-desc">従業員一覧・検索・詳細・新規登録・権限変更・部署変更。</p>
+      </a>
+      <a class="hub-card" href="admin-departments.html">
+        <span class="hub-icon">🏬</span>
+        <h2 class="hub-title">部署管理</h2>
+        <p class="hub-desc">部署一覧・所属人数の確認、部署の追加。</p>
+      </a>
+      <a class="hub-card" href="admin-attendance.html">
+        <span class="hub-icon">⏰</span>
+        <h2 class="hub-title">勤怠管理・月間カレンダー</h2>
+        <p class="hub-desc">全社員の勤怠一覧、従業員ごとの月間カレンダー・勤怠修正。</p>
+      </a>
+      <a class="hub-card" href="admin-schedule.html">
+        <span class="hub-icon">🗓️</span>
+        <h2 class="hub-title">スケジュール管理・部署別カレンダー</h2>
+        <p class="hub-desc">部署を選んで、部署全体の予定を1つの月間カレンダーで確認・登録。</p>
+      </a>
+      <a class="hub-card" href="admin-task.html">
+        <span class="hub-icon">📋</span>
+        <h2 class="hub-title">タスク管理</h2>
+        <p class="hub-desc">部署・ユーザー・ステータスで絞り込んで、誰が何をどこまで進めているか確認・割り当て。</p>
+      </a>
+      <a class="hub-card hub-muted" href="admin-health.html">
+        <span class="hub-icon">📊</span>
+        <h2 class="hub-title">健康ダッシュボード</h2>
+        <p class="hub-desc">会社・部署単位の健康集計(個人が特定できる情報は含みません)。</p>
+      </a>
+      <a class="hub-card hub-muted" href="admin-health-audit-log.html">
+        <span class="hub-icon">🔍</span>
+        <h2 class="hub-title">健康管理 監査ログ検索</h2>
+        <p class="hub-desc">期間・対象ユーザー・操作種別で、誰が健康データにアクセスしたかを検索。</p>
+      </a>
+    </section>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/admin-top.js"></script>
+</body>
+</html>

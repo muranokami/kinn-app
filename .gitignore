@@ -1,0 +1,25 @@
+# ビルド成果物
+target/
+*.class
+
+# IDE設定
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+# exFAT/外付けドライブ上でmacOSが自動生成するリソースフォークの副ファイル
+._*
+
+# 環境変数・秘密情報
+.env
+application-local.properties
+
+# ログ
+*.log
+logs/
+
+# Python
+__pycache__/
+*.pyc

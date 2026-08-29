@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 食事記録</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/health-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="health-top.html" class="back-link" title="健康管理トップへ戻る">&laquo; 健康管理</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">食事記録</p>
+  </header>
+
+  <main class="container">
+    <p style="color: var(--ink-soft); font-size: 14px; margin: 0 0 24px;">
+      「何を食べたか」だけでも大丈夫。まずはサクッと入力して、余裕があれば量や栄養素も追加しましょう 🍚
+    </p>
+
+    <section class="ai-meal-panel" id="aiMealPanel">
+      <div class="ai-meal-header">
+        <h2>🍽 今日のおすすめ献立</h2>
+        <a href="meal-ai-history.html" class="tmw-link">📖 AI献立履歴</a>
+      </div>
+      <p class="ai-meal-summary" id="aiMealSummary">読み込み中...</p>
+      <p class="ai-meal-note" id="aiMealSourceNote"></p>
+
+      <div class="ai-meal-grid" id="aiMealGrid"></div>
+
+      <div class="ai-meal-actions">
+        <button type="button" id="aiMealRegenerateBtn" class="btn btn-secondary">🔄 別の献立を提案</button>
+        <button type="button" id="aiMealSaveBtn" class="btn btn-success">⭐ この献立を保存</button>
+        <span class="status-msg" id="aiMealStatus"></span>
+      </div>
+
+      <details class="ai-meal-pref">
+        <summary>🍽 食の好み設定(任意・AI提案に反映されます)</summary>
+        <div class="event-form" style="margin-top:12px;">
+          <label class="field field-grow">好きな食材<input id="prefFavorite" type="text" placeholder="例: 鮭, 豆腐" /></label>
+          <label class="field field-grow">苦手な食材<input id="prefDisliked" type="text" placeholder="例: パクチー" /></label>
+        </div>
+        <div class="event-form" style="margin-top:12px;">
+          <label class="field field-grow">アレルギー(必ず献立から除外されます)<input id="prefAllergies" type="text" placeholder="例: 卵, 小麦, えび" /></label>
+          <label class="field field-grow">食事制限<input id="prefRestrictions" type="text" placeholder="例: 減塩, ベジタリアン" /></label>
+        </div>
+        <div class="event-form" style="margin-top:12px;">
+          <label class="field">予算(円)<input id="prefBudget" type="number" min="0" /></label>
+          <label class="field">調理時間(分)<input id="prefCookingMinutes" type="number" min="0" /></label>
+          <label class="field">自炊/外食
+            <select id="prefSelfCooked">
+              <option value="">未設定</option>
+              <option value="SELF_COOK">自炊</option>
+              <option value="EATING_OUT">外食</option>
+              <option value="EITHER">どちらでも</option>
+            </select>
+          </label>
+          <label class="field">料理レベル
+            <select id="prefCookingLevel">
+              <option value="">未設定</option>
+              <option value="BEGINNER">初級</option>
+              <option value="INTERMEDIATE">中級</option>
+              <option value="ADVANCED">上級</option>
+            </select>
+          </label>
+        </div>
+        <div class="field field-actions" style="margin-top:14px;">
+          <button type="button" id="prefSaveBtn" class="btn btn-success">好み設定を保存</button>
+          <span class="status-msg" id="prefStatus"></span>
+        </div>
+      </details>
+    </section>
+
+    <div id="mealCards">
+      <!-- 朝食 -->
+      <section class="meal-card" data-meal-type="BREAKFAST">
+        <div class="meal-card-head">
+          <h2>🌅 朝食</h2>
+          <span class="status-msg m-status"></span>
+        </div>
+
+        <div class="meal-view">
+          <div class="meal-view-body m-view-body">読み込み中...</div>
+          <div class="meal-view-actions m-view-actions"></div>
+        </div>
+
+        <form class="meal-form" hidden>
+          <label class="field field-grow">
+            食べたもの
+            <textarea class="m-items" rows="2" placeholder="例: トースト、目玉焼き、ヨーグルト"></textarea>
+          </label>
+          <details class="meal-detail">
+            <summary>詳しく入力する(任意)</summary>
+            <div class="event-form" style="margin-top:12px;">
+              <label class="field">料理名<input class="m-dish" type="text" /></label>
+              <label class="field">量<input class="m-amount" type="text" placeholder="例: 茶碗1杯" /></label>
+              <label class="field">食事時刻<input class="m-time" type="time" /></label>
+            </div>
+            <div class="event-form" style="margin-top:12px;">
+              <label class="field">カロリー(kcal)<input class="m-calories" type="number" min="0" /></label>
+              <label class="field">たんぱく質(g)<input class="m-protein" type="number" min="0" step="0.1" /></label>
+              <label class="field">脂質(g)<input class="m-fat" type="number" min="0" step="0.1" /></label>
+              <label class="field">炭水化物(g)<input class="m-carbs" type="number" min="0" step="0.1" /></label>
+              <label class="field">食物繊維(g)<input class="m-fiber" type="number" min="0" step="0.1" /></label>
+              <label class="field">塩分(g)<input class="m-salt" type="number" min="0" step="0.1" /></label>
+            </div>
+            <div class="event-form" style="margin-top:12px;">
+              <label class="field field-grow">写真URL<input class="m-photo" type="url" placeholder="https://..." /></label>
+              <label class="field field-grow">メモ<input class="m-memo" type="text" /></label>
+            </div>
+          </details>
+          <div class="field field-actions" style="margin-top:14px;">
+            <button type="submit" class="btn btn-success">保存</button>
+            <button type="button" class="btn btn-secondary m-cancel-btn">キャンセル</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 昼食 -->
+      <section class="meal-card" data-meal-type="LUNCH">
+        <div class="meal-card-head">
+          <h2>☀️ 昼食</h2>
+          <span class="status-msg m-status"></span>
+        </div>
+
+        <div class="meal-view">
+          <div class="meal-view-body m-view-body">読み込み中...</div>
+          <div class="meal-view-actions m-view-actions"></div>
+        </div>
+
+        <form class="meal-form" hidden>
+          <label class="field field-grow">
+            食べたもの
+            <textarea class="m-items" rows="2" placeholder="例: コンビニのおにぎり、サラダチキン、サラダ"></textarea>
+          </label>
+          <details class="meal-detail">
+            <summary>詳しく入力する(任意)</summary>
+            <div class="event-form" style="margin-top:12px;">
+              <label class="field">料理名<input class="m-dish" type="text" /></label>
+              <label class="field">量<input class="m-amount" type="text" placeholder="例: 茶碗1杯" /></label>
+              <label class="field">食事時刻<input class="m-time" type="time" /></label>
+            </div>
+            <div class="event-form" style="margin-top:12px;">
+              <label class="field">カロリー(kcal)<input class="m-calories" type="number" min="0" /></label>
+              <label class="field">たんぱく質(g)<input class="m-protein" type="number" min="0" step="0.1" /></label>
+              <label class="field">脂質(g)<input class="m-fat" type="number" min="0" step="0.1" /></label>
+              <label class="field">炭水化物(g)<input class="m-carbs" type="number" min="0" step="0.1" /></label>
+              <label class="field">食物繊維(g)<input class="m-fiber" type="number" min="0" step="0.1" /></label>
+              <label class="field">塩分(g)<input class="m-salt" type="number" min="0" step="0.1" /></label>
+            </div>
+            <div class="event-form" style="margin-top:12px;">
+              <label class="field field-grow">写真URL<input class="m-photo" type="url" placeholder="https://..." /></label>
+              <label class="field field-grow">メモ<input class="m-memo" type="text" /></label>
+            </div>
+          </details>
+          <div class="field field-actions" style="margin-top:14px;">
+            <button type="submit" class="btn btn-success">保存</button>
+            <button type="button" class="btn btn-secondary m-cancel-btn">キャンセル</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 夕食 -->
+      <section class="meal-card" data-meal-type="DINNER">
+        <div class="meal-card-head">
+          <h2>🌙 夕食</h2>
+          <span class="status-msg m-status"></span>
+        </div>
+
+        <div class="meal-view">
+          <div class="meal-view-body m-view-body">読み込み中...</div>
+          <div class="meal-view-actions m-view-actions"></div>
+        </div>
+
+        <form class="meal-form" hidden>
+          <label class="field field-grow">
+            食べたもの
+            <textarea class="m-items" rows="2" placeholder="例: ご飯、焼き魚、味噌汁、野菜炒め"></textarea>
+          </label>
+          <details class="meal-detail">
+            <summary>詳しく入力する(任意)</summary>
+            <div class="event-form" style="margin-top:12px;">
+              <label class="field">料理名<input class="m-dish" type="text" /></label>
+              <label class="field">量<input class="m-amount" type="text" placeholder="例: 茶碗1杯" /></label>
+              <label class="field">食事時刻<input class="m-time" type="time" /></label>
+            </div>
+            <div class="event-form" style="margin-top:12px;">
+              <label class="field">カロリー(kcal)<input class="m-calories" type="number" min="0" /></label>
+              <label class="field">たんぱく質(g)<input class="m-protein" type="number" min="0" step="0.1" /></label>
+              <label class="field">脂質(g)<input class="m-fat" type="number" min="0" step="0.1" /></label>
+              <label class="field">炭水化物(g)<input class="m-carbs" type="number" min="0" step="0.1" /></label>
+              <label class="field">食物繊維(g)<input class="m-fiber" type="number" min="0" step="0.1" /></label>
+              <label class="field">塩分(g)<input class="m-salt" type="number" min="0" step="0.1" /></label>
+            </div>
+            <div class="event-form" style="margin-top:12px;">
+              <label class="field field-grow">写真URL<input class="m-photo" type="url" placeholder="https://..." /></label>
+              <label class="field field-grow">メモ<input class="m-memo" type="text" /></label>
+            </div>
+          </details>
+          <div class="field field-actions" style="margin-top:14px;">
+            <button type="submit" class="btn btn-success">保存</button>
+            <button type="button" class="btn btn-secondary m-cancel-btn">キャンセル</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 間食(複数件登録可) -->
+      <section class="meal-card" data-meal-type="SNACK">
+        <h2>🍪 間食</h2>
+        <div id="snackList" class="snack-list"></div>
+        <form id="snackForm" class="event-form" style="margin-top:10px;">
+          <label class="field field-grow">
+            食べたもの
+            <input id="snackItems" type="text" placeholder="例: 甘栗、コーヒー" />
+          </label>
+          <div class="field field-actions">
+            <button type="submit" class="btn btn-secondary">追加</button>
+            <span id="snackStatus" class="status-msg"></span>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <section class="meal-summary-panel">
+      <h2 style="font-size:15px; letter-spacing:0.08em; color:var(--kon); border-bottom:2px solid var(--kon); display:inline-block; padding-bottom:4px; margin-bottom:16px;">
+        今日の食事
+      </h2>
+      <div class="meal-summary-grid" id="summaryMeals"></div>
+
+      <div class="summary" style="margin-top:20px;">
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label">摂取カロリー</span>
+            <span class="value"><span id="sumCalories">-</span><span class="unit">kcal</span></span>
+          </div>
+          <div class="summary-item">
+            <span class="label">たんぱく質</span>
+            <span class="value"><span id="sumProtein">-</span><span class="unit">g</span></span>
+          </div>
+          <div class="summary-item">
+            <span class="label">脂質</span>
+            <span class="value"><span id="sumFat">-</span><span class="unit">g</span></span>
+          </div>
+          <div class="summary-item">
+            <span class="label">炭水化物</span>
+            <span class="value"><span id="sumCarbs">-</span><span class="unit">g</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- レシピ詳細モーダル(①②③④⑤⑥⑦⑧⑨⑫)。朝食・昼食・夕食それぞれの「レシピを見る」
+       ボタン(レシピが紐づいている記録のみ表示)から開く。「レシピを作成」ボタンは廃止済み -->
+  <div class="modal-overlay" id="recipeViewModal" hidden>
+    <div class="modal-box">
+      <h2 id="recipeViewTitle">レシピ</h2>
+      <div id="recipeViewBody">読み込み中...</div>
+      <div class="modal-close-row">
+        <span class="status-msg" id="recipeViewStatus"></span>
+        <button type="button" class="btn btn-secondary" id="recipeViewCloseBtn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/health-common.js"></script>
+  <script src="js/recipe-shared.js"></script>
+  <script src="js/meal.js"></script>
+  <script src="js/meal-ai.js"></script>
+</body>
+</html>

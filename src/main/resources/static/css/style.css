@@ -1,0 +1,519 @@
+:root {
+  --paper: #FAF6EE;
+  --paper-line: #DCD4C0;
+  --ink: #23272E;
+  --ink-soft: #5B5B52;
+  --kon: #1F3A5F;      /* 紺色 - メインアクセント */
+  --kon-deep: #16283F;
+  --shu: #C33B2E;      /* 朱色 - 印鑑・強調色 */
+  --shu-deep: #9C2E23;
+  --jade: #3E6B52;     /* 保存ボタン用 */
+  --jade-deep: #2E5240;
+  --sat: #E7EEF7;      /* 土曜列 */
+  --sun: #FBEAE8;      /* 日曜・祝日列 */
+  --radius: 4px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Hiragino Sans", "Yu Gothic UI", "Meiryo", -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  gap: 18px;
+  padding: 28px 40px 20px;
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.back-link {
+  order: -1;
+  align-self: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  margin-right: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.back-link:hover {
+  background: var(--sat);
+  color: var(--kon);
+}
+
+.app-title {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--paper);
+  background: var(--shu);
+  border: 3px solid var(--shu-deep);
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.12);
+  transform: rotate(-1.5deg);
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+
+.app-subtitle {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+  border-left: 1px solid var(--paper-line);
+  padding-left: 16px;
+}
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 40px 60px;
+}
+
+/* --- 月ナビゲーション --- */
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.month-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  padding: 0 8px;
+}
+
+#yearInput {
+  width: 74px;
+  padding: 7px 8px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  background: #fff;
+  font-size: 14px;
+}
+
+#monthSelect {
+  padding: 7px 8px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  background: #fff;
+  font-size: 14px;
+}
+
+.btn {
+  border: none;
+  border-radius: var(--radius);
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.15s ease;
+}
+.btn:active { transform: translateY(1px); }
+
+.btn-secondary {
+  background: #fff;
+  color: var(--kon);
+  border: 1px solid var(--kon);
+}
+.btn-secondary:hover { background: var(--sat); }
+
+.btn-primary {
+  background: var(--kon);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--kon-deep); }
+
+.btn-success {
+  background: var(--jade);
+  color: #fff;
+}
+.btn-success:hover { background: var(--jade-deep); }
+
+.status-msg {
+  font-size: 13px;
+  color: var(--jade-deep);
+  margin-left: 4px;
+}
+.status-msg.error { color: var(--shu-deep); }
+
+/* --- テーブル --- */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 980px;
+  font-size: 13px;
+}
+
+thead th {
+  background: var(--kon);
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 8px;
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--paper-line);
+  border-right: 1px solid #EFE9DB;
+  text-align: center;
+  white-space: nowrap;
+}
+
+tbody tr:hover { background: #FBF9F3; }
+tbody tr.is-saturday td { background: var(--sat); }
+tbody tr.is-sunday td, tbody tr.is-holiday td { background: var(--sun); }
+tbody tr.is-saturday:hover td { background: #dde8f5; }
+tbody tr.is-sunday:hover td { background: #f6dedb; }
+
+td input[type="time"],
+td input[type="number"],
+td input[type="text"],
+td select {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  padding: 4px 5px;
+  font-size: 12.5px;
+  width: 100%;
+  background: #fff;
+}
+
+td select.day-type {
+  min-width: 96px;
+  font-weight: 600;
+}
+
+td input[type="number"] { width: 56px; text-align: right; }
+td input.remarks { width: 130px; text-align: left; }
+td input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+
+td.readonly-val {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  min-width: 46px;
+}
+
+/* --- 集計 --- */
+.summary { margin-top: 32px; }
+.summary h2 {
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--kon);
+  border-bottom: 2px solid var(--kon);
+  display: inline-block;
+  padding-bottom: 4px;
+  margin-bottom: 16px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--paper-line);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.summary-item {
+  background: #fff;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summary-item .label {
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+
+.summary-item .value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--kon);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-item .unit {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-left: 2px;
+}
+
+/* --- 予定登録フォーム(スケジュール管理) --- */
+.event-form-wrap {
+  margin-bottom: 28px;
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.event-form-wrap h2 {
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--kon);
+  margin: 0 0 14px;
+}
+
+.event-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.field-grow { flex: 1 1 200px; }
+.field-actions { flex-direction: row; gap: 8px; }
+
+.field input,
+.field select {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  padding: 7px 8px;
+  font-size: 13px;
+  background: #fff;
+  min-width: 0;
+}
+
+/* --- 予定一覧(スケジュール管理) --- */
+.event-list-wrap table { min-width: 760px; }
+
+.category-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.category-WORK    { background: var(--sat); color: var(--kon); }
+.category-MEETING { background: #EAE3F5; color: #5B3E9C; }
+.category-PRIVATE { background: var(--jade-soft, #E7F1EB); color: var(--jade); }
+.category-HEALTH  { background: var(--sun); color: var(--shu-deep); }
+.category-OTHER   { background: #EFE9DB; color: var(--ink-soft); }
+
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 12.5px;
+}
+.btn-danger {
+  background: #fff;
+  color: var(--shu-deep);
+  border: 1px solid var(--shu);
+}
+.btn-danger:hover { background: var(--sun); }
+
+.row-actions { display: flex; gap: 6px; justify-content: center; }
+
+.empty-row td {
+  text-align: center;
+  color: var(--ink-soft);
+  padding: 24px;
+}
+
+@media (max-width: 900px) {
+  .container { padding: 20px; }
+  .app-header { padding: 20px 20px 16px; gap: 12px; }
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  .event-form { flex-direction: column; align-items: stretch; }
+  .hub-grid { grid-template-columns: 1fr; }
+}
+
+/* ==============================================================
+   汎用UIコンポーネント(健康管理・勤怠・タスク・スケジュール・管理者画面など、
+   複数の機能ドメインで使い回されている汎用クラス)。
+   元々は health-extra.css に置かれていたが、実際には健康管理と無関係な
+   画面(管理者トップ・従業員管理・勤怠管理・タスク管理・スケジュール管理等)
+   からも使われており、「どのファイルに何が定義されているか」が分かりにくく
+   なっていた(CSS構成整理)。
+   別ファイル(common.css)への分離ではなくstyle.cssへの統合を選んだ理由:
+   これらのクラスを使う画面はほぼ全て既にstyle.cssを読み込み済みのため、
+   新たに<link>タグを増やさずに済み、かつstyle.css自体が元々.btn/.summary-grid
+   など汎用コンポーネントを置く場所として使われてきた構成に馴染むため。
+   --shu-soft はここ(style.css)の:rootには無いトークンなので、
+   健康管理系ページ(--shu-softを:rootで定義するhealth-extra.cssも読み込む
+   ページ)と見た目を完全に一致させるため、値そのもの(#FBEAE8)を
+   フォールバックとして指定している(health-extra.css/top.cssの
+   --shu-soft定義と同じ値)。
+   ============================================================== */
+
+/* --- 管理者画面共通: 見出しバッジ・注意書き --- */
+.admin-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--shu-deep);
+  background: var(--shu-soft, #FBEAE8);
+  border: 1px solid #EFC7C1;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+.admin-note {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  background: #FCFAF4;
+  border: 1px dashed var(--paper-line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 24px;
+}
+
+/* --- 集計カードの強調枠(合計・重要な数値を目立たせる) --- */
+.summary-item-highlight {
+  border: 2px solid var(--kon);
+}
+.summary-item-highlight .value { color: var(--kon); }
+
+/* --- 管理者画面共通: パンくず --- */
+.breadcrumb {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: 16px 40px 0;
+}
+.breadcrumb a { color: var(--kon); text-decoration: none; font-weight: 600; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb .crumb-current { color: var(--ink); font-weight: 700; }
+.breadcrumb .crumb-sep { margin: 0 6px; color: var(--paper-line); }
+
+/* --- 管理者画面共通: 部署フィルタ --- */
+.department-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+.department-filter-bar select { min-width: 180px; }
+
+/* --- リストの「該当なし」表示(複数画面の空状態メッセージで共用) --- */
+.snack-empty { font-size: 13px; color: var(--ink-soft); margin: 0; }
+
+/*
+ * 注意: display は [hidden] 属性より必ず後勝ちする(author CSSはUA既定の
+ * `[hidden]{display:none}` を上書きしてしまうため)。そのため .modal-overlay 自体には
+ * display を指定せず、:not([hidden]) のときだけ表示するようにする。
+ * これを誤って `.modal-overlay { display: flex; }` と書くと、JS側で element.hidden = true
+ * を設定してもCSSが常に表示を優先してしまい、モーダルが閉じない・キャンセルボタンが
+ * 効かないように見える不具合になる(実際にこのバグが発生していた)。
+ */
+.modal-overlay:not([hidden]) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 60px 20px;
+  overflow-y: auto;
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(35, 39, 46, 0.45);
+  z-index: 100;
+}
+.modal-box {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+.modal-box h2 {
+  font-size: 16px;
+  color: var(--kon);
+  margin: 0 0 16px;
+}
+.modal-close-row { display: flex; justify-content: flex-end; margin-top: 18px; gap: 10px; }
+.detail-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 8px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.detail-grid dt { color: var(--ink-soft); font-weight: 600; }
+.detail-grid dd { margin: 0; }
+
+/* --- ハブ画面(トップから各機能へ振り分けるカード一覧)。
+   管理者トップ(admin-top.html)・健康管理トップ(health-top.html)の
+   両方で使う汎用レイアウト --- */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-bottom: 32px;
+}
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 22px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  box-shadow: 0 4px 14px rgba(35, 39, 46, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.hub-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(35, 39, 46, 0.1);
+  border-color: var(--kon);
+}
+.hub-card .hub-icon { font-size: 30px; }
+.hub-card .hub-title { margin: 2px 0 0; font-size: 16px; font-weight: 700; color: var(--kon); }
+.hub-card .hub-desc { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-soft); min-height: 36px; }
+.hub-card.hub-muted { background: #FCFAF4; }
+.hub-card.hub-muted .hub-title { color: var(--ink-soft); }
+
+.hub-section-label {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  margin: 28px 0 12px;
+}

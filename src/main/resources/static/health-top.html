@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 健康管理トップ</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/health-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="index.html" class="back-link" title="トップページへ戻る">&laquo; トップ</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">健康管理</p>
+  </header>
+
+  <main class="container">
+    <p style="color: var(--ink-soft); font-size: 14px; margin: 0 0 24px;">
+      毎日の体調を記録して、健康スコアや推移をチェックしよう。がんばりすぎていないか、たまに振り返るのも大切です 🌿
+    </p>
+
+    <section class="today-meal-widget" id="todayMealWidget">
+      <div class="tmw-header">
+        <span class="tmw-title">🍽️ 今日の食事</span>
+        <a href="meal.html" class="tmw-link">記録する &rarr;</a>
+      </div>
+      <div class="tmw-body" id="tmwBody">読み込み中...</div>
+    </section>
+
+    <div class="hub-section-label">きょうの記録</div>
+    <section class="hub-grid">
+      <a class="hub-card" href="health-check.html">
+        <span class="hub-icon">📝</span>
+        <h2 class="hub-title">今日の体調チェック</h2>
+        <p class="hub-desc">体調・睡眠・疲労度・ストレス度などを毎日サクッと記録。</p>
+      </a>
+      <a class="hub-card" href="meal.html">
+        <span class="hub-icon">🍚</span>
+        <h2 class="hub-title">食事記録</h2>
+        <p class="hub-desc">朝・昼・夕の食事を「何を食べたか」だけでもサクッと記録。</p>
+      </a>
+      <a class="hub-card" href="health-score.html">
+        <span class="hub-icon">💯</span>
+        <h2 class="hub-title">健康スコア</h2>
+        <p class="hub-desc">0〜100点で今日の健康状態を見える化。内訳もひと目で確認。</p>
+      </a>
+      <a class="hub-card" href="health-profile.html">
+        <span class="hub-icon">🧾</span>
+        <h2 class="hub-title">健康プロフィール</h2>
+        <p class="hub-desc">身長・体重(BMI自動計算)・血圧などの基本情報を登録。</p>
+      </a>
+      <a class="hub-card" href="recipe.html">
+        <span class="hub-icon">🍳</span>
+        <h2 class="hub-title">レシピ・調理方法</h2>
+        <p class="hub-desc">料理名・材料・調理方法・調理手順を登録。1週間の献立作成でも活用予定。</p>
+      </a>
+    </section>
+
+    <div class="hub-section-label">推移・分析</div>
+    <section class="hub-grid">
+      <a class="hub-card" href="health-history.html">
+        <span class="hub-icon">📖</span>
+        <h2 class="hub-title">健康履歴</h2>
+        <p class="hub-desc">過去の体調チェックをまとめて振り返る。</p>
+      </a>
+      <a class="hub-card" href="meal-history.html">
+        <span class="hub-icon">🍽️</span>
+        <h2 class="hub-title">食事履歴</h2>
+        <p class="hub-desc">今日・昨日・1週間・1か月の食事内容と記録日数を振り返る。</p>
+      </a>
+      <a class="hub-card" href="health-graph.html">
+        <span class="hub-icon">📈</span>
+        <h2 class="hub-title">健康グラフ</h2>
+        <p class="hub-desc">スコア・体重・睡眠などの推移を1週間〜6か月で表示。</p>
+      </a>
+      <a class="hub-card" href="health-analysis.html">
+        <span class="hub-icon">🔗</span>
+        <h2 class="hub-title">勤怠×健康分析</h2>
+        <p class="hub-desc">残業時間や勤務時間と、睡眠・疲労・ストレスの関係を確認。</p>
+      </a>
+    </section>
+
+    <div class="hub-section-label">その他</div>
+    <section class="hub-grid">
+      <a class="hub-card hub-muted" href="health.html">
+        <span class="hub-icon">🗂️</span>
+        <h2 class="hub-title">月次健康記録(従来画面)</h2>
+        <p class="hub-desc">体重・歩数などを月表形式でまとめて入力する従来の画面。</p>
+      </a>
+      <a class="hub-card hub-muted" href="admin-health.html">
+        <span class="hub-icon">🏢</span>
+        <h2 class="hub-title">管理者ダッシュボード</h2>
+        <p class="hub-desc">個人情報を含まない、会社・部署単位の集計ビュー。</p>
+      </a>
+      <a class="hub-card hub-muted" href="health-audit-log.html">
+        <span class="hub-icon">🔍</span>
+        <h2 class="hub-title">アクセス履歴</h2>
+        <p class="hub-desc">自分の健康データに誰が・いつ・何をしたかを確認。</p>
+      </a>
+    </section>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/health-common.js"></script>
+  <script src="js/health-top.js"></script>
+</body>
+</html>

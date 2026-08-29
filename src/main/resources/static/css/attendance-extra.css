@@ -1,0 +1,173 @@
+/* ------------------------------------------------------------------
+   勤怠管理(休日区分の明確化)専用スタイル。style.css自体は変更しない。
+------------------------------------------------------------------- */
+
+/* --- 管理者向け一覧: 部署・従業員名での検索(見やすさ改善) --- */
+.attendance-search-bar {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+.attendance-search-bar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.attendance-search-bar input[type="search"] {
+  min-width: 200px;
+  padding: 7px 10px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.attendance-search-hint {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+/* --- 管理者向け一覧: 従業員ごとのグループ見出し行(見やすさ改善)。
+   以前は生のemployeeIdが全行に繰り返し表示され、氏名も見づらかったため、
+   従業員が変わるたびに氏名・部署・カレンダーへのリンクをまとめた見出し行を挟む --- */
+tbody tr.attendance-employee-header td {
+  background: var(--kon);
+  color: #fff;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-top: 2px solid var(--kon);
+}
+tbody tr.attendance-employee-header:hover td { background: var(--kon); }
+.aeh-name { font-size: 14px; }
+.aeh-dept {
+  margin-left: 10px;
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+.aeh-link {
+  float: right;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  text-decoration: underline;
+}
+.aeh-link:hover { opacity: 0.85; }
+
+/* --- 締め日(カレンダー開始日)を指定した期間ナビゲーション --- */
+.period-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.period-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.closing-day-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.closing-day-field select {
+  padding: 7px 8px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  background: #fff;
+  font-size: 14px;
+}
+.period-label {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--kon);
+  padding: 4px 0;
+}
+
+.holiday-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--shu-deep, #b1432f);
+  white-space: normal;
+  line-height: 1.3;
+}
+
+/* .summary-item-highlight は勤怠以外の管理者画面でも使うため
+   style.cssの「汎用UIコンポーネント」セクションへ移動した(CSS構成整理。
+   以前はここと health-extra.css の両方に同一定義が重複していた) */
+
+.detail-panel {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin: 24px 0;
+}
+.detail-panel summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--kon);
+}
+
+/* --- 管理者向け: 従業員別カレンダー(月〜日の7列) --- */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin: 16px 0 24px;
+}
+.calendar-head {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  padding: 4px 0;
+}
+.calendar-cell {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 8px;
+  min-height: 92px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.calendar-cell:hover { box-shadow: 0 0 0 2px var(--kon) inset; }
+.calendar-cell-blank { background: transparent; border: none; cursor: default; }
+.calendar-cell.is-saturday { background: var(--sat); }
+.calendar-cell.is-sunday, .calendar-cell.is-holiday { background: var(--sun); }
+.calendar-cell-date { font-weight: 700; color: var(--kon); margin-bottom: 2px; }
+.calendar-cell-type { color: var(--ink-soft); }
+.calendar-cell-time { font-variant-numeric: tabular-nums; }
+.calendar-cell-hours { color: var(--ink-soft); }
+.calendar-cell-ot { color: var(--shu-deep); font-weight: 600; }
+
+/* --- トップページの自動休憩機能が記録した休憩開始〜終了時刻(⑩) --- */
+.break-time-hint {
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* --- スマホ幅対応。.calendar-grid/.calendar-cell はschedule-extra.cssの
+   カレンダー(スケジュール管理)と同じ見た目のコンポーネントで、そちらは
+   既に同じブレークポイント(720px)で縮小表示に切り替えている。
+   attendance-extra.css側(勤怠の従業員別カレンダー)にはこの調整が
+   漏れていたため、値を揃えて追加する(7列グリッドは幅が狭いと
+   1マスが極端に小さくなり、時刻・時間数が読めなくなるため)。 --- */
+@media (max-width: 720px) {
+  .calendar-grid { gap: 3px; }
+  .calendar-cell { min-height: 76px; padding: 4px; font-size: 10px; }
+}
+
+/* --- スマホ幅対応。検索欄の最小幅(200px)が原因で横スクロールが発生しないよう、
+   画面幅が足りない場合は入力欄を画面幅いっぱいに広げる --- */
+@media (max-width: 520px) {
+  .attendance-search-bar input[type="search"] { min-width: 0; width: 100%; }
+  .period-label { font-size: 17px; }
+}

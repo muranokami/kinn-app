@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 部署管理</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="admin-top.html" class="back-link" title="管理者メニューへ戻る">&laquo; 管理者メニュー</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">部署管理</p>
+  </header>
+
+  <nav class="breadcrumb">
+    <a href="admin-top.html">管理者トップ</a><span class="crumb-sep">&rang;</span><span class="crumb-current">部署管理</span>
+  </nav>
+
+  <main class="container">
+    <span class="admin-badge">管理者ビュー</span>
+    <p class="admin-note">自分の会社の部署のみ表示・追加できます。別会社の部署として登録されることはありません。</p>
+
+    <form id="createDeptForm" class="event-form" style="margin-bottom:20px;">
+      <label class="field field-grow">部署名<input id="deptNameInput" type="text" placeholder="例: 営業部" required /></label>
+      <div class="field field-actions">
+        <button type="submit" class="btn btn-success">登録</button>
+        <span class="status-msg" id="deptStatus"></span>
+      </div>
+    </form>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>部署名</th>
+            <th>所属人数</th>
+          </tr>
+        </thead>
+        <tbody id="deptTbody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/admin-departments.js"></script>
+</body>
+</html>

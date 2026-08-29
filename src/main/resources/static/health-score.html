@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 健康スコア</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/health-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="health-top.html" class="back-link" title="健康管理トップへ戻る">&laquo; 健康管理</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">健康スコア</p>
+  </header>
+
+  <main class="container">
+    <section class="score-hero">
+      <div class="score-ring" id="scoreRing" style="--pct:0;">
+        <div class="score-ring-inner">
+          <div class="score-num" id="scoreNum">-</div>
+          <div class="score-denom">/ 100</div>
+        </div>
+      </div>
+      <div class="score-meta">
+        <p class="score-eyebrow">HEALTH SCORE (<span id="scoreDateLabel"></span>)</p>
+        <p class="score-level" id="scoreLevel">-</p>
+        <p class="score-note" id="scoreNote">「今日の体調チェック」を記録すると、より正確なスコアが表示されます。</p>
+        <a href="health-check.html" class="btn btn-primary" style="display:inline-block; margin-top:10px; text-decoration:none;">今日の体調を記録する</a>
+      </div>
+    </section>
+
+    <h2 style="font-size:15px; letter-spacing:0.08em; color:var(--kon); border-bottom:2px solid var(--kon); display:inline-block; padding-bottom:4px; margin-bottom:16px;">
+      スコアの内訳
+    </h2>
+    <section class="score-breakdown" id="breakdownGrid"></section>
+
+    <h2 style="font-size:15px; letter-spacing:0.08em; color:var(--kon); border-bottom:2px solid var(--kon); display:inline-block; padding-bottom:4px; margin-bottom:16px;">
+      健康アラート
+    </h2>
+    <section class="alert-list" id="alertList"></section>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/health-common.js"></script>
+  <script src="js/health-score.js"></script>
+</body>
+</html>
