@@ -21,8 +21,12 @@ import java.util.stream.Collectors;
  * ・AI API(Anthropic Messages API)が利用可能な場合はそちらを優先する({@link AiMealClient}参照)。
  * ・AI未設定/失敗時は本クラス内のルールベース提案ロジックに自動フォールバックするため、
  *   AI APIキーが無い環境でも本機能自体は必ず動作する(健康管理アプリ全体を壊さない)。
- * ・既存の {@link MealService}(食事記録)・{@link HealthProfileService}・{@link HealthScoreService}を
+ * ・既存の {@link MealService}(食事記録)・{@link HealthScoreService}を
  *   読み取り専用で利用するだけで、既存機能には一切変更を加えない。
+ * ・健康情報(健康プロフィール・体調チェック・健康スコア)は、外部AI APIへは一切送信しない
+ *   (セキュリティレビュー対応。buildPrompt javadoc参照)。あくまでサーバー内部の
+ *   ルールベース提案(analyzeGaps)でのみ利用し、外部送信するのは前日の食事記録と
+ *   ユーザーが登録した食の好み(好き嫌い・アレルギー・食事制限・予算・調理時間)のみ。
  */
 @Service
 public class MealRecommendationService {
@@ -91,7 +95,6 @@ public class MealRecommendationService {
     private static final int CALORIES_LOW_THRESHOLD_KCAL = 1200;
 
     private final MealService mealService;
-    private final HealthProfileService healthProfileService;
     private final HealthScoreService healthScoreService;
     private final HealthCheckRepository healthCheckRepository;
     private final UserFoodPreferenceService preferenceService;
@@ -101,7 +104,6 @@ public class MealRecommendationService {
 
     public MealRecommendationService(
             MealService mealService,
-            HealthProfileService healthProfileService,
             HealthScoreService healthScoreService,
             HealthCheckRepository healthCheckRepository,
             UserFoodPreferenceService preferenceService,
@@ -109,7 +111,6 @@ public class MealRecommendationService {
             AiMealSuggestionItemRepository itemRepository,
             AiMealClient aiMealClient) {
         this.mealService = mealService;
-        this.healthProfileService = healthProfileService;
         this.healthScoreService = healthScoreService;
         this.healthCheckRepository = healthCheckRepository;
         this.preferenceService = preferenceService;
@@ -209,7 +210,11 @@ public class MealRecommendationService {
         boolean hasPrevData = !prevDay.getBreakfast().isEmpty() || !prevDay.getLunch().isEmpty()
                 || !prevDay.getDinner().isEmpty() || !prevDay.getSnacks().isEmpty();
 
-        HealthProfileDto profile = healthProfileService.getProfile(employeeId);
+        // 健康プロフィール(身長・体重・BMI等)は、以前はAIへの提案プロンプトにも含めていたが、
+        // 外部AI API(Anthropic)への要配慮個人情報の送信を避けるためプロンプトからは除外した
+        // (buildPrompt参照。docs/health-audit-legal-checklist.md 9.のセキュリティレビュー対応)。
+        // 健康スコア(score)・体調チェック(todaysCheck)は、AIへは送らずルールベース側の
+        // タグ選定(analyzeGaps、サーバー内部で完結し外部送信しない)にのみ引き続き利用する。
         HealthScoreDto score = healthScoreService.getScoreForDate(employeeId, date);
         UserFoodPreferenceDto preference = preferenceService.getPreference(employeeId);
         HealthCheck todaysCheck = healthCheckRepository.findByEmployeeIdAndCheckDate(employeeId, date)
@@ -232,7 +237,7 @@ public class MealRecommendationService {
 
         Optional<AiRawSuggestionDto> aiResult = Optional.empty();
         if (aiMealClient.isConfigured()) {
-            String prompt = buildPrompt(prevDay, hasPrevData, profile, score, todaysCheck, preference, date);
+            String prompt = buildPrompt(prevDay, hasPrevData, preference, date);
             aiResult = aiMealClient.generate(prompt);
         }
 
@@ -429,8 +434,19 @@ public class MealRecommendationService {
     // AI連携(プロンプト構築・レスポンス検証)
     // ------------------------------------------------------------------
 
-    private String buildPrompt(DayMealsDto prevDay, boolean hasPrevData, HealthProfileDto profile,
-                                HealthScoreDto score, HealthCheck check, UserFoodPreferenceDto preference,
+    /**
+     * 外部AI API(Anthropic)へ送るプロンプトを組み立てる。
+     *
+     * 身長・体重・BMI・睡眠時間・疲労度・ストレス度・健康スコアといった健康情報は、
+     * 以前はここに含めていたが、要配慮個人情報を外部APIへ送信することになるため
+     * セキュリティレビューを受けて除外した(docs/health-audit-legal-checklist.md 9.参照)。
+     * これらの値は引き続きサーバー内部の analyzeGaps(ルールベースのタグ選定)でのみ使う。
+     *
+     * アレルギー・食事制限・好き嫌い等の「食の好み」は、レビュー結果として送信を継続する
+     * (アレルギー食材を誤って提案しないための安全上の理由。実際に提案結果へ含まれてしまった
+     * 場合も、safeAiOrFallbackがサーバー側で二重にチェックして安全な代替案へ差し替える)。
+     */
+    private String buildPrompt(DayMealsDto prevDay, boolean hasPrevData, UserFoodPreferenceDto preference,
                                 LocalDate targetDate) {
         MealNutritionSummaryDto n = prevDay.getNutrition();
         StringBuilder sb = new StringBuilder();
@@ -454,19 +470,6 @@ public class MealRecommendationService {
         sb.append("炭水化物: ").append(valueOrUnknown(n != null ? n.getTotalCarbsG() : null, "g")).append("\n");
         sb.append("食物繊維: ").append(valueOrUnknown(n != null ? n.getTotalFiberG() : null, "g")).append("\n");
         sb.append("塩分: ").append(valueOrUnknown(n != null ? n.getTotalSaltG() : null, "g")).append("\n");
-
-        sb.append("\n【健康情報(診断目的では使用しないでください)】\n");
-        sb.append("身長: ").append(valueOrUnknown(profile.getHeightCm(), "cm")).append("\n");
-        sb.append("体重: ").append(valueOrUnknown(profile.getWeightKg(), "kg")).append("\n");
-        sb.append("BMI: ").append(valueOrUnknown(profile.getBmi(), "")).append("\n");
-        sb.append("平均睡眠時間: ").append(valueOrUnknown(profile.getAvgSleepHours(), "時間")).append("\n");
-        sb.append("平均運動時間: ").append(valueOrUnknown(profile.getExerciseMinutes(), "分")).append("\n");
-        if (check != null) {
-            sb.append("直近の睡眠: ").append(valueOrUnknown(check.getSleepHours(), "時間")).append("\n");
-            sb.append("直近の疲労度(1〜5): ").append(valueOrUnknown(check.getFatigueLevel(), "")).append("\n");
-            sb.append("直近のストレス度(1〜5): ").append(valueOrUnknown(check.getStressLevel(), "")).append("\n");
-        }
-        sb.append("健康スコア(0〜100): ").append(score.isHasData() ? score.getTotalScore() : "不明").append("\n");
 
         sb.append("\n【ユーザー設定】\n");
         sb.append("好きな食材: ").append(valueOrUnknown(preference.getFavoriteFoods(), "")).append("\n");
