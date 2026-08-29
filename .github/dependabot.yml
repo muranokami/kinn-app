@@ -1,0 +1,21 @@
+# Dependabot設定(項目4-5)。
+# 依存パッケージに既知の脆弱性が見つかった場合、Dependabotが自動的に更新用の
+# Pull Requestを作成する。実際にPRが作られるタイミングはGitHub側のスケジュールに
+# よるため、このファイルを追加しただけでは即座にPRは作られない。
+version: 2
+updates:
+  # pom.xmlの依存関係(Spring Boot, Flyway等)を週次でチェックする。
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  # GitHub Actionsのワークフローファイル(.github/workflows/*.yml)は現時点では
+  # 存在しないが、将来追加した際にそのまま脆弱性チェック対象になるよう、
+  # 先に設定だけ用意しておく(ワークフローが無い間はDependabotは何もしない)。
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5

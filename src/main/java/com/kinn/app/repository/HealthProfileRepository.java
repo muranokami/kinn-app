@@ -13,6 +13,9 @@ public interface HealthProfileRepository extends JpaRepository<HealthProfile, Lo
 
     List<HealthProfile> findByEmployeeIdIn(List<String> employeeIds);
 
+    /** 本人からの削除申請対応(HealthSelfDataDeletionService参照)に使う */
+    void deleteByEmployeeId(String employeeId);
+
     @Query("select distinct p.employeeId from HealthProfile p")
     List<String> findDistinctEmployeeIds();
 }

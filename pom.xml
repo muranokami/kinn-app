@@ -51,6 +51,18 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- スキーマ管理をHibernateの自動更新(ddl-auto=update)からFlywayへ移行するために追加
+             (項目4-6)。バージョンはspring-boot-starter-parentのdependencyManagementに従う。
+             flyway-database-postgresqlは、Flyway 10以降でPostgreSQL固有の機能(識別列等)への
+             対応が本体(flyway-core)から分離されたため別途必要。 -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

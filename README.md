@@ -60,13 +60,34 @@ spring.datasource.username=postgres
 spring.datasource.password=postgres
 ```
 
-テーブルは初回起動時に Hibernate が自動生成します(`spring.jpa.hibernate.ddl-auto=update`)。
-勤怠(`attendance_record`)・健康(`health_record`, 従来の月次記録)・
-スケジュール(`schedule_event`)に加えて、拡張健康管理機能用の
-`health_profile`(健康プロフィール)・`health_check`(今日の体調チェック)・
-`health_alert`(健康アラート)、食事管理機能用の`meal_record`(食事記録)の
-7テーブルが作成されます。
-既存データを削除・変更するマイグレーションは行っていません(テーブル追加のみ)。
+テーブルは初回起動時に**Flyway**が自動的に作成します。以前は
+`spring.jpa.hibernate.ddl-auto=update`でHibernateに自動生成させていましたが、
+マイグレーションのバージョン管理ができないため、Flywayへ移行しました
+(`spring.jpa.hibernate.ddl-auto`は現在`validate`。Hibernateは起動時にEntityの
+定義とDBの実スキーマが一致しているかをチェックするだけで、スキーマの作成・変更は
+一切行いません)。
+
+#### 今後のテーブル変更の運用
+
+Entityクラスを変更するだけではDBのテーブルは変わりません。テーブル構造の変更が
+必要な場合は、必ず対応するマイグレーションファイルを追加してください。
+
+1. `src/main/resources/db/migration/` に、`V{番号}__{説明}.sql` という名前で
+   SQLファイルを追加する(番号は既存の最大値+1、説明は英数字とアンダースコアのみ)。
+   - 例: `V2__add_email_verified_to_app_user.sql`
+   - 例: `V3__create_notification_channel.sql`
+2. アプリを起動すると、Flywayが未適用のマイグレーションを`flyway_schema_history`
+   テーブルの記録と照合し、新しいものだけ順番に自動実行する。
+3. 一度リリース済みのマイグレーションファイル(内容)は変更しないこと
+   (Flywayはチェックサムで改ざんを検知してエラーにする)。修正が必要な場合は
+   新しい番号のマイグレーションファイルを追加すること。
+
+`src/main/resources/db/migration/V1__baseline.sql`は、Flyway導入時点
+(2026-08-29)で実際に稼働していたスキーマをそのまま書き起こした「後追いベースライン」
+です。既にテーブルが存在する既存のDB(本番・開発)に対しては
+`spring.flyway.baseline-on-migrate=true`により、V1は実行されず「適用済み」として
+記録されるだけになります(baseline化)。まだテーブルが存在しない新しいDBに対しては、
+V1がそのまま実行されて同じスキーマが作られます。
 
 ### 3. 起動
 
@@ -244,7 +265,11 @@ http://localhost:8080
   リバースプロキシ等での対応を想定)。本番投入時は、HTTPS配信・
   `prod` プロファイルの有効化・DB接続情報等の環境変数の上書きをあわせて
   行ってください。
-- 依存ライブラリの脆弱性スキャン(Dependabot等)は現時点で未設定です。
+- 依存ライブラリ(Maven)に既知の脆弱性が見つかった場合、GitHub Dependabot
+  (`.github/dependabot.yml`)が自動的に更新用のPull Requestを作成します
+  (週次チェック。GitHub Actionsのワークフローを追加した場合は月次チェックも
+  自動的に有効になります)。実際にPRが作られるタイミングはGitHub側のスケジュール
+  によるため、リポジトリ側の設定だけでは即時には反映されません。
 
 ## Python分析スクリプト
 

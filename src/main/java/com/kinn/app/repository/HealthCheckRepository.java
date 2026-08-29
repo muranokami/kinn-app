@@ -19,4 +19,7 @@ public interface HealthCheckRepository extends JpaRepository<HealthCheck, Long> 
     List<String> findDistinctEmployeeIds();
 
     List<HealthCheck> findByCheckDateBetweenOrderByCheckDateAsc(LocalDate from, LocalDate to);
+
+    /** 本人からの削除申請対応(HealthSelfDataDeletionService参照)に使う */
+    void deleteByEmployeeId(String employeeId);
 }

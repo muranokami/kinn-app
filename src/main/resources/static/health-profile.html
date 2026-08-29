@@ -18,6 +18,7 @@
   <main class="container">
     <p style="color: var(--ink-soft); font-size: 13px; margin: 0 0 20px;">
       身長・体重などの基本情報です。診断目的ではなく、ご自身の健康状態を記録・見える化するためのものです。
+      すべての項目は任意入力です。未入力のままでも、勤怠・タスクなど他の機能の利用に支障はありません。
     </p>
 
     <section class="event-form-wrap">
@@ -90,6 +91,20 @@
         </div>
       </form>
       <span id="statusMsg" class="status-msg"></span>
+    </section>
+
+    <section class="event-form-wrap">
+      <h2>健康記録の削除</h2>
+      <p class="auth-note" style="margin:0 0 14px;">
+        このセルフケア支援機能(健康プロフィール・今日の体調チェックの記録・それらから
+        自動生成された健康アラート)への入力はいつでも取りやめることができます。
+        削除すると元に戻せません。勤怠・タスク・スケジュール・食事記録など他の機能の
+        データは削除されません。
+      </p>
+      <div class="field field-actions">
+        <button type="button" class="btn btn-danger" id="deleteAllBtn">健康記録をすべて削除する</button>
+        <span id="deleteStatusMsg" class="status-msg"></span>
+      </div>
     </section>
   </main>
 

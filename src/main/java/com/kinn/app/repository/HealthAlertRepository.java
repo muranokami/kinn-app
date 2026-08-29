@@ -18,4 +18,7 @@ public interface HealthAlertRepository extends JpaRepository<HealthAlert, Long> 
     long countByTriggeredDateBetween(LocalDate from, LocalDate to);
 
     long countByEmployeeIdAndTriggeredDateBetween(String employeeId, LocalDate from, LocalDate to);
+
+    /** 本人からの削除申請対応(HealthSelfDataDeletionService参照)に使う */
+    void deleteByEmployeeId(String employeeId);
 }
