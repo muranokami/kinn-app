@@ -166,6 +166,86 @@ http://localhost:8080
 いずれもクエリパラメータ `employeeId`(省略時 `default`)で従業員を切り替えられます
 (複数人管理への拡張用)。
 
+## セキュリティ
+
+このアプリは会社(`company`)単位のマルチテナント構成で、ログイン(`AppUser`)・
+ロール(`ADMIN`/`USER`)ベースのアクセス制御を実装しています。実装箇所は主に
+`SecurityConfig` / `AuthController` / `AuthService` / `PasswordService` /
+`RateLimiter` / `LoginAttemptListener` / `AccountSecurityLogService`
+(いずれも `src/main/java/com/kinn/app/...`)です。
+
+### 認証・パスワード
+
+- パスワードは BCrypt でハッシュ化して保存し、平文は一切保持しません。
+- ログイン試行を一定回数失敗すると、そのアカウントを一時的にロックします
+  (既定: 5回失敗で15分ロック。`app.security.login.*` で調整可能)。
+- パスワードのリセットは**管理者による強制リセットのみ**です。メール経由の
+  セルフサービス型リセット(本人がメールのリンクから再設定する方式)は、
+  外部のメール経路を伴い個人情報漏洩の経路になり得るという判断であえて
+  実装していません。
+- 現時点で多要素認証(MFA/TOTP)は導入していません。
+
+### セッション・CSRF
+
+- セッションベース認証(HttpSession)。ログイン成功時にセッションIDを
+  再発行し、セッション固定攻撃を防ぎます。
+- 同一アカウントの同時ログインセッション数を制限します
+  (既定: 3セッションまで。超過時は最も古いセッションを失効)。
+- CSRF対策として Cookie(`XSRF-TOKEN`)+ リクエストヘッダ
+  (`X-XSRF-TOKEN`)によるトークン検証を行います。
+- セッション用Cookie(`JSESSIONID`)・CSRF用Cookie(`XSRF-TOKEN`)は
+  `Secure`/`SameSite` 属性を設定可能です。**本番環境では必ずHTTPS配信の上で
+  `--spring.profiles.active=prod` を指定してください**
+  (`application-prod.properties` で `Secure=true` / `SameSite=Strict` に
+  厳格化されます。開発時の既定値はHTTP動作を優先し `Secure=false` です)。
+
+### アクセス制限・監査ログ
+
+- ログイン・新規登録・会社コード照会 API に IPアドレス単位のレート制限を
+  かけています(既定: ログイン10回/60秒、新規登録5回/60秒)。
+- 管理者専用の画面・APIは Spring Security のロール制御(`hasRole("ADMIN")`)
+  で保護し、一般ユーザーからのアクセスは拒否されます。
+- ログイン成功/失敗・ロック・管理者による操作などは `account_security_log`
+  テーブルに、健康データへのアクセス(誰が・いつ・誰の記録を見たか)は
+  `health_audit_log` テーブルに、それぞれ改ざん検知用の追記専用ログとして
+  記録されます(管理者は `admin-health-audit-log.html` から検索可能)。
+- 認証・認可レベルで拒否されたアクセス(未ログイン・権限不足)は
+  アプリの監査テーブルには本人を特定できないため記録できませんが、
+  専用のセキュリティログファイル(`logs/security.log`)に別途記録します。
+  このファイルは実際のアクセス試行(IPアドレス等)を含むため
+  `.gitignore` でリポジトリから除外しています。
+
+### HTTPセキュリティヘッダー
+
+- Content-Security-Policy(スクリプト/画像/フォント等を自ドメインに限定)、
+  HTTP Strict Transport Security、`X-Frame-Options: DENY`、
+  `X-Content-Type-Options: nosniff` を設定しています。
+
+### 通知・外部送信
+
+- 健康アラートやタスク期限アラートは、メール/Slack等の外部への通知送信を
+  行わず、本人がアプリ画面を開いた際にその場で表示するアプリ内アラートのみ
+  にしています。個人情報を含みうる通知を外部チャネルへ送信する経路を
+  そもそも持たない設計です。
+
+### 秘匿情報の扱い
+
+- DB接続パスワードやAI APIキー等は `application.properties` 内で
+  環境変数(`${DB_PASSWORD:postgres}` など)から注入する形にしており、
+  実際の値をリポジトリにコミットしていません。ローカル動作用のデフォルト値
+  (`postgres` 等)は本番では必ず環境変数で上書きしてください。
+- `.env` / `application-local.properties` / `*.log` / `logs/` は
+  `.gitignore` で除外し、実データ・実ログをリポジトリに含めないようにして
+  います。
+
+### 既知の制約
+
+- 現状はアプリケーションサーバー自体はHTTPで動作します(HTTPS終端は
+  リバースプロキシ等での対応を想定)。本番投入時は、HTTPS配信・
+  `prod` プロファイルの有効化・DB接続情報等の環境変数の上書きをあわせて
+  行ってください。
+- 依存ライブラリの脆弱性スキャン(Dependabot等)は現時点で未設定です。
+
 ## Python分析スクリプト
 
 `python/health_report.py` は、Webアプリの実行フローとは独立して動く分析バッチです。
