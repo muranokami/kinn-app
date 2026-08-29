@@ -2,6 +2,7 @@ package com.kinn.app.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,7 +48,11 @@ public class RegisterRequestDto {
     @NotBlank(message = "ユーザーIDを入力してください")
     private String loginId;
 
+    // ChangePasswordRequestDtoの新パスワードと同じ最低文字数(8文字)にする。
+    // 以前はここに@Sizeが無く、登録時(特に会社を新規作成する最初の管理者アカウント)だけ
+    // 1文字のパスワードでも作成できてしまっていた(セキュリティレビューで指摘・修正)。
     @NotBlank(message = "パスワードを入力してください")
+    @Size(min = 8, message = "パスワードは8文字以上で入力してください")
     private String password;
 
     @NotBlank(message = "確認用パスワードを入力してください")
@@ -56,7 +61,10 @@ public class RegisterRequestDto {
     @NotBlank(message = "氏名を入力してください")
     private String fullName;
 
-    /** セルフサービス型パスワードリセット(ForgotPasswordService)に使う。新規登録では必須 */
+    /**
+     * 管理者による本人確認・連絡先として使う(セルフサービス型のメールパスワードリセットは
+     * 個人情報漏洩防止の観点から実装していない。SecurityConfigのjavadoc参照)。新規登録では必須
+     */
     @NotBlank(message = "メールアドレスを入力してください")
     @Email(message = "メールアドレスの形式が正しくありません")
     private String email;

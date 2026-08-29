@@ -55,6 +55,8 @@ public class AuthController {
     private final long loginRateLimitWindowSeconds;
     private final int registerRateLimitMax;
     private final long registerRateLimitWindowSeconds;
+    private final int companyLookupRateLimitMax;
+    private final long companyLookupRateLimitWindowSeconds;
 
     public AuthController(AuthService authService,
                            PasswordService passwordService,
@@ -65,7 +67,9 @@ public class AuthController {
                            @Value("${app.security.rate-limit.login.max-requests:10}") int loginRateLimitMax,
                            @Value("${app.security.rate-limit.login.window-seconds:60}") long loginRateLimitWindowSeconds,
                            @Value("${app.security.rate-limit.register.max-requests:5}") int registerRateLimitMax,
-                           @Value("${app.security.rate-limit.register.window-seconds:60}") long registerRateLimitWindowSeconds) {
+                           @Value("${app.security.rate-limit.register.window-seconds:60}") long registerRateLimitWindowSeconds,
+                           @Value("${app.security.rate-limit.company-lookup.max-requests:20}") int companyLookupRateLimitMax,
+                           @Value("${app.security.rate-limit.company-lookup.window-seconds:60}") long companyLookupRateLimitWindowSeconds) {
         this.authService = authService;
         this.passwordService = passwordService;
         this.authenticationManager = authenticationManager;
@@ -76,6 +80,8 @@ public class AuthController {
         this.loginRateLimitWindowSeconds = loginRateLimitWindowSeconds;
         this.registerRateLimitMax = registerRateLimitMax;
         this.registerRateLimitWindowSeconds = registerRateLimitWindowSeconds;
+        this.companyLookupRateLimitMax = companyLookupRateLimitMax;
+        this.companyLookupRateLimitWindowSeconds = companyLookupRateLimitWindowSeconds;
     }
 
     @PostMapping("/register")
@@ -90,9 +96,16 @@ public class AuthController {
      * 「会社コードが正しくありません」といった案内に変換する)。
      * 旧・会社名ベースの /departments エンドポイントは廃止した(会社名の一意性を
      * 前提にできなくなったため。AuthService#lookupCompanyByCode参照)。
+     *
+     * login/registerと同じくIPアドレス単位のレート制限をかける(セキュリティレビューで指摘・追加)。
+     * 未認証で誰でも呼べる上、会社コードは8桁の英数字のみのため、レート制限が無いと
+     * 総当たりで有効な会社コードを探索され、他社への参加登録(JOIN)に悪用されうるため。
+     * ただしregister.js側は入力欄からフォーカスが外れる・変更されるたびに毎回呼ぶ作りのため、
+     * 通常の入力ミス訂正では引っかからないよう login/register よりゆるめの上限にしている。
      */
     @GetMapping("/company-lookup")
-    public CompanyLookupDto lookupCompany(@RequestParam String companyCode) {
+    public CompanyLookupDto lookupCompany(@RequestParam String companyCode, HttpServletRequest request) {
+        checkRateLimit("company-lookup", request, companyLookupRateLimitMax, companyLookupRateLimitWindowSeconds);
         return authService.lookupCompanyByCode(companyCode);
     }
 
