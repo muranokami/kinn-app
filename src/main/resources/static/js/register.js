@@ -1,5 +1,16 @@
 let companyLookupLoadedFor = null;
 
+// 「新しく会社を登録する」で登録が完了し、会社コード案内(#companyCodePanel)を
+// 表示している間だけtrueにする。この間にタブを閉じる・ブラウザの戻るボタンで
+// 離脱するなど、ページ遷移が起きそうになったらbeforeunloadで確認ダイアログを出し、
+// 会社コードを一度も見ないまま離脱してしまう事故を防ぐ(下のhandleRegister参照)。
+let companyCodePendingAck = false;
+window.addEventListener("beforeunload", (e) => {
+  if (!companyCodePendingAck) return;
+  e.preventDefault();
+  e.returnValue = "";
+});
+
 window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("registerForm").addEventListener("submit", handleRegister);
   document.getElementById("modeCreate").addEventListener("change", applyModeVisibility);
@@ -11,6 +22,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("companyCodeCopyBtn").addEventListener("click", copyCompanyCode);
   document.getElementById("companyCodeProceedBtn").addEventListener("click", () => {
+    // 「ログイン画面へ進む」で明示的に離脱する場合は、以後beforeunloadで
+    // 確認を出す必要が無いため解除してから遷移する
+    companyCodePendingAck = false;
     window.location.href = "login.html";
   });
 
@@ -125,6 +139,17 @@ async function handleRegister(e) {
   }
 
   statusEl.textContent = "登録中...";
+
+  // 送信中(サーバーの応答待ち)は送信ボタンと「ログイン画面へ戻る」リンクを
+  // 操作不可にする。これが無いと、応答が返る前にリンクから離脱された場合、
+  // 登録リクエスト自体はサーバー側で成立してしまうのに、会社コードの案内画面を
+  // 一度も表示できないまま終わってしまう恐れがあるため(新しく会社を登録した
+  // 直後にしか一度に案内できない値のため、確実に見てもらう必要がある)。
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const backLink = document.getElementById("backToLoginLink");
+  submitBtn.disabled = true;
+  backLink.setAttribute("aria-disabled", "true");
+
   try {
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -142,6 +167,9 @@ async function handleRegister(e) {
       document.getElementById("registerForm").hidden = true;
       document.getElementById("companyCodeValue").textContent = user.companyCode;
       document.getElementById("companyCodePanel").hidden = false;
+      // 「ログイン画面へ進む」を押すまでは、タブを閉じる・戻るボタン等での
+      // 離脱にbeforeunloadで確認を挟む(上の宣言・イベントリスナー参照)
+      companyCodePendingAck = true;
       return;
     }
 
@@ -154,6 +182,9 @@ async function handleRegister(e) {
     console.error(err);
     statusEl.textContent = err.message || "登録に失敗しました";
     statusEl.classList.add("error");
+    // 失敗時は再度操作できるように戻す
+    submitBtn.disabled = false;
+    backLink.removeAttribute("aria-disabled");
   }
 }
 

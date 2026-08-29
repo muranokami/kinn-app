@@ -52,6 +52,17 @@
       margin: 16px 0;
       user-select: all;
     }
+
+    /* 登録リクエスト送信中は、送信ボタンだけでなく「ログイン画面へ戻る」リンクも
+       操作不可にする(js/register.jsのhandleRegister参照。登録が完了する前に
+       このリンクで離脱されると、会社コードを一度も表示できないまま登録が
+       完了してしまう恐れがあるため)。 */
+    .auth-switch a[aria-disabled="true"] {
+      pointer-events: none;
+      color: var(--ink-soft);
+      text-decoration: none;
+      opacity: 0.6;
+    }
   </style>
 </head>
 <body>
@@ -120,7 +131,7 @@
       </div>
 
       <p class="auth-switch">
-        <a href="login.html">ログイン画面へ戻る</a>
+        <a href="login.html" id="backToLoginLink">ログイン画面へ戻る</a>
       </p>
     </form>
 
