@@ -151,11 +151,33 @@ async function handleRegister(e) {
   backLink.setAttribute("aria-disabled", "true");
 
   try {
-    const res = await fetch("/api/auth/register", {
+    let res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+
+    // 422: 同じ名前の会社が既に登録されている(AuthService#register参照)。
+    // 別会社としてあえて同じ名前で登録したい場合もあるため、ここでハード ブロックはせず、
+    // 確認ダイアログでユーザーの意思を確認できたら confirmDuplicateName=true を付けて
+    // 同じ内容をもう一度送信する(パスワード等を入力し直させない)。
+    if (res.status === 422) {
+      const message = await readErrorMessage(res, "同じ名前の会社が既に登録されています。");
+      const proceed = window.confirm(message + "\n\nこのまま新しい別会社として登録しますか?");
+      if (!proceed) {
+        statusEl.textContent = "登録を中止しました。会社名をご確認いただくか、既存の会社に参加する場合は会社コードをご利用ください。";
+        statusEl.classList.add("error");
+        submitBtn.disabled = false;
+        backLink.removeAttribute("aria-disabled");
+        return;
+      }
+      res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, confirmDuplicateName: true }),
+      });
+    }
+
     if (!res.ok) {
       throw new Error(await readErrorMessage(res, "登録に失敗しました"));
     }

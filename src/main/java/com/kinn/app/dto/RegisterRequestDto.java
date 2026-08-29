@@ -35,6 +35,15 @@ public class RegisterRequestDto {
     /** CREATE時のみ必須: 新しく作る会社の名前 */
     private String companyName;
 
+    /**
+     * CREATE時のみ使用。同名の会社が既に存在する場合、AuthService#registerは422で
+     * 一度確認を求める(会社名が重複するとログイン時に会社名だけでは特定できなくなるため。
+     * resolveCompanyByNameOrCodeのjavadoc参照)。register.jsが確認ダイアログを出した上で
+     * ユーザーが「それでも登録する」を選んだ場合のみtrueにして再送信する。
+     */
+    @Builder.Default
+    private boolean confirmDuplicateName = false;
+
     /** JOIN時のみ必須: 参加先の会社コード */
     private String companyCode;
 

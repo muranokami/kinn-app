@@ -85,8 +85,22 @@ public class AuthService {
             if (dto.getCompanyName() == null || dto.getCompanyName().isBlank()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "会社名を入力してください");
             }
+            String companyName = dto.getCompanyName().trim();
+            // company.nameにユニーク制約は無いため、技術的には同名の会社を何個でも作成できる。
+            // しかし同名の会社が複数になると、ログイン画面で会社名を入力しても一意に特定できず
+            // ログインできなくなる(resolveCompanyByNameOrCodeのjavadoc参照。実際に発生し、
+            // セキュリティレビュー4-2で指摘された)。既存の別会社が意図的に同じ社名を名乗る
+            // ケースまでは禁止したくないため、ハード ブロックはせず、確認なしでは先に進めない
+            // ようにする(register.js側がこの422を検知し、確認ダイアログを出してから
+            // confirmDuplicateName=trueで再送信する)。
+            if (!dto.isConfirmDuplicateName() && companyRepository.existsByName(companyName)) {
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                        "「" + companyName + "」という名前の会社は既に登録されています。"
+                                + "同じ会社であれば、新規登録ではなく「既存の会社に参加する」から会社コードで参加してください。"
+                                + "別の会社として、あえて同じ名前のまま新規登録する場合は、もう一度「登録」を押してください。");
+            }
             company = companyRepository.save(Company.builder()
-                    .name(dto.getCompanyName().trim())
+                    .name(companyName)
                     .companyCode(companyCodeGenerator.generateUnique())
                     .build());
         } else {
@@ -156,9 +170,12 @@ public class AuthService {
     /**
      * ログイン画面の「会社名」欄を実際のcompanyIdへ解決し、
      * AuthenticationManagerへ渡す "companyId|loginId" 形式のusernameを組み立てる。
-     * 会社が存在しない場合も、ここでは詳細を明かさずBadCredentialsExceptionを投げ、
-     * 呼び出し側(AuthController)でパスワード誤りと同じ汎用メッセージにする
-     * (アカウントの存在を特定されにくくするため)。
+     * 会社が(会社名でも会社コードでも)一件も見つからない場合は、ここでは詳細を明かさず
+     * BadCredentialsExceptionを投げ、呼び出し側(AuthController)でパスワード誤りと同じ
+     * 汎用メッセージにする(アカウントの存在を特定されにくくするため)。
+     * 会社名が複数の会社に一致してしまい一意に特定できない場合は、resolveCompanyByNameOrCode
+     * 側がResponseStatusExceptionを投げる(そちらのjavadoc参照。この場合だけは
+     * 「会社コードでログインしてください」と具体的に案内する)。
      */
     @Transactional(readOnly = true)
     public String resolveUsername(String companyNameOrCode, String loginId) {
@@ -169,17 +186,20 @@ public class AuthService {
 
     /**
      * 「会社名または会社コード」の入力欄から会社を解決する共通ロジック。ログイン
-     * (resolveUsername)と、セルフサービス型パスワードリセットの申請(ForgotPasswordService)の
-     * 両方から使う。
+     * (resolveUsername)専用。
      *
      * company.nameのユニーク制約を撤廃した(会社識別方法の見直し)ことにより、同名の会社が
      * 複数存在し得る。それに対応するため、会社名だけでなく会社コード
      * (新規登録時にADMINへ発行される一意な値)でも解決できるようにしている。
      * 1. まずcompany_codeとして完全一致するか調べる(一致すれば一意に確定するため最優先)。
      * 2. 一致しなければ会社名として調べる。同名の会社が複数あってfindByNameが一意な結果を
-     *    返せない場合(IncorrectResultSizeDataAccessException)は、Optional.empty()として扱う
-     *    (呼び出し元をエラーで落とさない。500エラーにせず、どちらの会社か特定できない以上、
-     *    安全側に倒して「会社が見つからない」のと同じ結果にする)。
+     *    返せない場合(IncorrectResultSizeDataAccessException)は、以前はOptional.empty()として
+     *    扱い「会社が見つからない」のと同じ汎用エラー(会社名、ユーザーID、またはパスワードが
+     *    正しくありません)にしていたが、これだとユーザーID・パスワードが正しくても
+     *    原因不明のままログインできない状態になってしまっていた(セキュリティレビュー4-2で指摘)。
+     *    そのため、この「複数の会社と一致してしまい一意に特定できない」ケースだけは
+     *    ResponseStatusExceptionで明確に案内するよう変更した。会社の存在有無やアカウントの
+     *    有効性そのものは明かしていない(「この名前は複数の会社が使っている」という事実のみを伝える)。
      */
     @Transactional(readOnly = true)
     public Optional<Company> resolveCompanyByNameOrCode(String companyNameOrCode) {
@@ -192,7 +212,9 @@ public class AuthService {
         try {
             return companyRepository.findByName(trimmed);
         } catch (org.springframework.dao.IncorrectResultSizeDataAccessException e) {
-            return Optional.empty();
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "入力された会社名に一致する会社が複数見つかったため、会社名では特定できません。"
+                            + "会社コード(管理者トップ画面で確認できます)でログインしてください。");
         }
     }
 
