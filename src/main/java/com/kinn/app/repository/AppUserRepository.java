@@ -15,6 +15,9 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     /** 管理者の従業員一覧・検索用(必ず companyId で絞り込んでから使うこと=会社単位のアクセス制御) */
     List<AppUser> findByCompanyIdOrderByFullNameAsc(Long companyId);
 
+    /** 全社向けお知らせの対象人数表示用(お知らせ既読状況API)。会社全体の社員数 */
+    long countByCompanyId(Long companyId);
+
     /** 部署で絞り込んだ従業員一覧用。companyIdも条件に含めることで他社の部署IDが紛れ込んでも安全 */
     List<AppUser> findByCompanyIdAndDepartmentIdOrderByFullNameAsc(Long companyId, Long departmentId);
 
