@@ -1,5 +1,10 @@
 package com.kinn.app.entity;
 
+import com.kinn.app.security.crypto.EncryptedDoubleConverter;
+import com.kinn.app.security.crypto.EncryptedDrinkingStatusConverter;
+import com.kinn.app.security.crypto.EncryptedIntegerConverter;
+import com.kinn.app.security.crypto.EncryptedSmokingStatusConverter;
+import com.kinn.app.security.crypto.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +20,10 @@ import java.time.LocalDateTime;
  * ストレスチェック制度(第66条の10)と紛らわしい外形を作らないため、アプリからは
  * 完全に削除した(docs/health-audit-legal-checklist.md 参照)。DB上の`stress_level`列自体は
  * 既存データ保護のため残しているが、このEntityからは参照しない。
+ *
+ * 身長・体重・血圧・体温・運動時間・睡眠時間・喫煙/飲酒状況・メモは要配慮個人情報のため、
+ * {@code @Convert}でDB保存前にAES-256-GCM暗号化する(HealthDataEncryptor参照。
+ * セキュリティレビュー③対応。V5マイグレーションで列をtextへ変更済み)。
  */
 @Entity
 @Table(
@@ -45,42 +54,52 @@ public class HealthProfile {
     private String department;
 
     /** 身長(cm) */
-    @Column(name = "height_cm")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "height_cm", columnDefinition = "text")
     private Double heightCm;
 
     /** 体重(kg) */
-    @Column(name = "weight_kg")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "weight_kg", columnDefinition = "text")
     private Double weightKg;
 
     /** 収縮期血圧(上) */
-    @Column(name = "systolic_bp")
+    @Convert(converter = EncryptedIntegerConverter.class)
+    @Column(name = "systolic_bp", columnDefinition = "text")
     private Integer systolicBp;
 
     /** 拡張期血圧(下) */
-    @Column(name = "diastolic_bp")
+    @Convert(converter = EncryptedIntegerConverter.class)
+    @Column(name = "diastolic_bp", columnDefinition = "text")
     private Integer diastolicBp;
 
     /** 体温(℃) */
-    @Column(name = "body_temperature")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "body_temperature", columnDefinition = "text")
     private Double bodyTemperature;
 
     /** 平均的な運動時間(分/日) */
-    @Column(name = "exercise_minutes")
+    @Convert(converter = EncryptedIntegerConverter.class)
+    @Column(name = "exercise_minutes", columnDefinition = "text")
     private Integer exerciseMinutes;
 
     /** 平均睡眠時間(時間) */
-    @Column(name = "avg_sleep_hours")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "avg_sleep_hours", columnDefinition = "text")
     private Double avgSleepHours;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "smoking_status", length = 32)
+    // @Enumeratedとは併用できないため、Enum名そのものを暗号化するConverterに置き換えている
+    // (AbstractEncryptedEnumConverterのjavadoc参照)。
+    @Convert(converter = EncryptedSmokingStatusConverter.class)
+    @Column(name = "smoking_status", columnDefinition = "text")
     private SmokingStatus smokingStatus;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "drinking_status", length = 32)
+    @Convert(converter = EncryptedDrinkingStatusConverter.class)
+    @Column(name = "drinking_status", columnDefinition = "text")
     private DrinkingStatus drinkingStatus;
 
-    @Column(name = "health_memo", length = 1000)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "health_memo", columnDefinition = "text")
     private String healthMemo;
 
     @Column(name = "updated_at")
