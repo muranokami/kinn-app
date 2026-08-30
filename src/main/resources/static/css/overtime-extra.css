@@ -1,0 +1,124 @@
+/* ------------------------------------------------------------------
+   残業申請機能専用スタイル。既存の style.css / task-extra.css / announcement-extra.css は
+   変更しない。.btn* / .modal-overlay / .field / .event-form* / .table-wrap などの基本クラスは
+   それらのファイルで定義済みのものをそのまま再利用する(announcement-extra.cssと同じ方針)。
+   overtime.html(申請者本人)・admin-overtime.html(管理者)の両方で読み込む。
+------------------------------------------------------------------- */
+
+/* --- ステータスバッジ --- */
+.overtime-status-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.overtime-status-badge.status-PENDING  { background: #FBF1D9; color: #8A6A16; }
+.overtime-status-badge.status-APPROVED { background: var(--jade-soft, #E7F1EB); color: var(--jade, #3E6B52); }
+.overtime-status-badge.status-REJECTED { background: var(--shu-soft, #FBEAE8); color: var(--shu-deep, #C33B2E); }
+
+/* --- 申請者本人: 自分の申請履歴一覧 --- */
+.overtime-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.overtime-empty {
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 20px 4px;
+  text-align: center;
+}
+
+.overtime-card {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.overtime-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.overtime-card-date {
+  flex: 1 1 auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.overtime-card-minutes {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.overtime-card-reason {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--paper-line);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.overtime-card-reject {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--shu-deep, #C33B2E);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.overtime-card-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* --- 管理者: 一覧テーブル --- */
+.event-list-wrap #overtimeTable td.col-reason { text-align: left; color: var(--ink-soft); max-width: 320px; word-break: break-word; }
+
+/* --- 管理者: フィルターバー(task-filter-barと同じ見た目) --- */
+.overtime-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.overtime-filter-bar .filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.overtime-filter-bar select {
+  padding: 7px 8px;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  background: #fff;
+  font-size: 13px;
+}
+
+/* --- 管理者: 却下理由モーダルのテキストエリア --- */
+.field textarea {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  padding: 7px 8px;
+  font-size: 13px;
+  background: #fff;
+  min-width: 0;
+  font-family: inherit;
+  resize: vertical;
+}

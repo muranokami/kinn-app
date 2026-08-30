@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 残業申請管理(管理者)</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/task-extra.css" />
+  <link rel="stylesheet" href="css/overtime-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="admin-top.html" class="back-link" title="管理者メニューへ戻る">&laquo; 管理者メニュー</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">残業申請管理(管理者)</p>
+  </header>
+
+  <nav class="breadcrumb">
+    <a href="admin-top.html">管理者トップ</a><span class="crumb-sep">&rang;</span><span class="crumb-current">残業申請管理</span>
+  </nav>
+
+  <main class="container">
+    <span class="admin-badge">管理者ビュー</span>
+    <p class="admin-note">
+      自分の会社に所属する従業員の残業申請のみを確認・承認・却下できます。他社の情報にはアクセスできません。
+      承認済みの申請はあくまで「予定」であり、実際の勤務実績(打刻から計算される残業時間)は自動的には変わりません。
+    </p>
+    <span id="statusMsg" class="status-msg"></span>
+
+    <!-- フィルターバー(ステータス・部署) -->
+    <section class="overtime-filter-bar">
+      <div class="filter-group status-tabs" id="statusTabs">
+        <button type="button" class="btn btn-secondary is-active" data-status="">すべて</button>
+        <button type="button" class="btn btn-secondary" data-status="PENDING">承認待ち</button>
+        <button type="button" class="btn btn-secondary" data-status="APPROVED">承認済み</button>
+        <button type="button" class="btn btn-secondary" data-status="REJECTED">却下</button>
+      </div>
+      <div class="filter-group">
+        <label for="departmentFilter">部署</label>
+        <select id="departmentFilter">
+          <option value="">全部署</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- 申請一覧 -->
+    <section class="table-wrap event-list-wrap">
+      <table id="overtimeTable">
+        <thead>
+          <tr>
+            <th>ステータス</th>
+            <th>対象日</th>
+            <th>部署</th>
+            <th>申請者</th>
+            <th>予定時間</th>
+            <th>理由</th>
+            <th>承認/却下</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="overtimeTbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- 却下理由入力モーダル -->
+  <div class="modal-overlay" id="rejectModal" hidden>
+    <div class="modal-box">
+      <h2>この申請を却下しますか？</h2>
+      <p class="announcement-note" id="rejectSummary"></p>
+      <form id="rejectForm">
+        <div class="event-form">
+          <div class="field field-grow">
+            <label for="r_rejectReason">却下理由</label>
+            <textarea id="r_rejectReason" rows="3" maxlength="500" required placeholder="却下理由を入力してください"></textarea>
+          </div>
+        </div>
+        <div class="modal-close-row">
+          <span class="status-msg" id="rejectStatus"></span>
+          <button type="submit" class="btn btn-danger">却下する</button>
+          <button type="button" class="btn btn-secondary" id="rejectCancelBtn">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/admin-overtime.js"></script>
+</body>
+</html>
