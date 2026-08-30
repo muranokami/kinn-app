@@ -92,13 +92,14 @@ public class HealthAuditSecurityEventLogger {
         log.warn("未認証状態で健康管理関連URLへのアクセスがありました: path={}, ip={}", path, clientIp(request));
     }
 
-    /** /api/admin/health/** のうち、実際にADMIN権限が必要なパスだけを対象リソースへ解決する */
+    /**
+     * /api/admin/health/** のうち、実際にADMIN権限が必要なパスだけを対象リソースへ解決する。
+     * 管理者向け健康ダッシュボード(/api/admin/health/dashboard)は撤廃済みのため、
+     * 現存するのは監査ログ検索のみ(HealthAuditResource.ADMIN_DASHBOARDのjavadoc参照)。
+     */
     private HealthAuditResource resolveAdminHealthResource(String path) {
         if (path == null) {
             return null;
-        }
-        if (path.equals("/api/admin/health/dashboard")) {
-            return HealthAuditResource.ADMIN_DASHBOARD;
         }
         if (path.equals("/api/admin/health/audit-log")) {
             return HealthAuditResource.AUDIT_LOG;
