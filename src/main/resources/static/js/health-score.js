@@ -11,7 +11,6 @@ const SCORE_BREAKDOWN_ITEMS = [
 window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("scoreDateLabel").textContent = healthTodayStr();
   loadScore();
-  loadAlerts();
 });
 
 async function loadScore() {
@@ -45,34 +44,4 @@ function renderScore(s) {
     `;
     grid.appendChild(div);
   });
-}
-
-async function loadAlerts() {
-  const listEl = document.getElementById("alertList");
-  try {
-    const res = await fetch(`/api/health/alerts?employeeId=${HEALTH_EMPLOYEE_ID}`);
-    if (!res.ok) throw new Error("読み込みに失敗しました");
-    const alerts = await res.json();
-    if (alerts.length === 0) {
-      listEl.innerHTML = `<p class="alert-empty">現在、特に気になる傾向はありません。この調子でいきましょう ✨</p>`;
-      return;
-    }
-    listEl.innerHTML = "";
-    alerts.forEach((a) => {
-      const div = document.createElement("div");
-      div.className = `alert-item severity-${a.severity}`;
-      div.innerHTML = `
-        <span class="alert-icon">${a.severity === "WARNING" ? "⚠️" : "💡"}</span>
-        <div class="alert-body">
-          <div class="alert-type">${a.alertTypeLabel}</div>
-          <p class="alert-message">${a.message}</p>
-          <div class="alert-date">${a.triggeredDate}</div>
-        </div>
-      `;
-      listEl.appendChild(div);
-    });
-  } catch (e) {
-    console.error(e);
-    listEl.innerHTML = `<p class="alert-empty">アラートの読み込みに失敗しました</p>`;
-  }
 }

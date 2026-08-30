@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -66,12 +67,24 @@ import java.util.Map;
  * 漏洩の経路になり得るという判断から実装ごと削除した。対象社員のパスワードリセットは、必ず
  * 管理者による強制リセット(/api/admin/employees/{id}/reset-password)を経由すること。
  *
- * 同じ理由で、健康アラート・タスク期限アラートの通知もメール/Slackでの外部送信は行わず、
+ * 同じ理由で、タスク期限アラートの通知もメール/Slackでの外部送信は行わず、
  * 本人が画面(index.html/top.js)を開いた際にその場で表示するアプリ内アラートのみにしている
- * (index.htmlのhealthAlertBanner/taskAlertBanner参照)。会社単位の通知チャネル設定は存在しない。
+ * (index.htmlのtaskAlertBanner参照)。会社単位の通知チャネル設定は存在しない。
+ * なお健康管理機能は診断・治療の提案を行わず記録・閲覧・可視化に限定する方針のため、
+ * 健康アラート機能自体を撤廃済み(2026-08-30、docs/health-audit-legal-checklist.md参照)。
+ *
+ * 管理者専用APIの認可は、本クラスの authorizeHttpRequests による URLパターン一致
+ * (/api/admin/** → hasRole("ADMIN"))を主としつつ、各 AdminXxxController クラスにも
+ * @PreAuthorize("hasRole('ADMIN')") を付与する多層防御にしている(2026-08-30セキュリティレビュー
+ * 対応)。URLパターンだけに認可を一本化すると、将来 Admin 用 Controller を追加する際に
+ * @RequestMapping を /api/admin/ 始まりにし忘れる・typoする等の実装ミスがあった場合、
+ * 認可漏れがそのまま本番に出てしまう。@EnableMethodSecurity を有効化することで、
+ * その場合でも Controller 側のメソッドセキュリティが独立した防御として機能する。
+ * この一貫性は AdminControllerSecurityArchitectureTest で機械的に検証している。
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     /** ロール不足・未認証アクセスを集約するための専用ロガー(logback-spring.xmlでファイル出力先を分離) */
@@ -231,9 +244,10 @@ public class SecurityConfig {
                     .permitAll()
                     // 管理者専用画面・API(既存の管理者機能を保護)。
                     .requestMatchers(
-                            "/admin-top.html", "/admin-health.html", "/admin-attendance.html",
+                            "/admin-top.html", "/admin-attendance.html",
                             "/admin-dashboard.html", "/admin-employees.html", "/admin-departments.html",
                             "/admin-schedule.html", "/admin-task.html", "/admin-health-audit-log.html",
+                            "/admin-announcement.html", "/admin-overtime.html",
                             "/api/admin/**")
                     .hasRole("ADMIN")
                     .anyRequest().authenticated())

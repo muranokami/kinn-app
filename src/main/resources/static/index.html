@@ -43,6 +43,16 @@
           <span class="info-chip-icon" id="weatherIcon" aria-hidden="true">🌡️</span>
           <span class="info-chip-value" id="weatherValue">天気を取得中...</span>
         </div>
+        <a class="info-chip" id="announcementChip" href="announcement.html">
+          <span class="info-chip-icon" aria-hidden="true">📢</span>
+          <span class="info-chip-value" id="announcementValue">お知らせを確認中...</span>
+        </a>
+        <!-- 残業申請の通知チップ。一般ユーザーは「直近で承認/却下された自分の申請」、管理者は
+             「承認待ちの申請件数」を表示する(件数が0の間はhiddenのまま。top.js参照) -->
+        <a class="info-chip" id="overtimeChip" href="overtime.html" hidden>
+          <span class="info-chip-icon" aria-hidden="true">🕗</span>
+          <span class="info-chip-value" id="overtimeValue">-</span>
+        </a>
       </div>
     </header>
 
@@ -50,14 +60,6 @@
     <a class="task-alert-banner" id="taskAlertBanner" href="task.html" hidden>
       <span class="task-alert-icon" aria-hidden="true">📋</span>
       <span id="taskAlertText"></span>
-      <span class="task-alert-arrow" aria-hidden="true">&rarr;</span>
-    </a>
-
-    <!-- 本日、健康チェックの傾向から注意喚起が発生した場合だけのアプリ内アラート(クリックでhealth-top.htmlへ)。
-         外部メール・Slackへは送らず、本人がこの画面を開いた時だけ表示する(HealthAlertService参照) -->
-    <a class="task-alert-banner" id="healthAlertBanner" href="health-top.html" hidden>
-      <span class="task-alert-icon" aria-hidden="true">💪</span>
-      <span id="healthAlertText"></span>
       <span class="task-alert-arrow" aria-hidden="true">&rarr;</span>
     </a>
 
@@ -122,6 +124,13 @@
         <span class="card-icon">📋</span>
         <h2 class="card-title">タスク管理</h2>
         <p class="card-desc">自分のタスクを未対応・対応中・完了で管理。</p>
+        <span class="card-cta">開く &rarr;</span>
+      </a>
+
+      <a class="card card-shu" href="overtime.html" data-tilt>
+        <span class="card-icon">🕗</span>
+        <h2 class="card-title">残業申請</h2>
+        <p class="card-desc">残業の予定を事前に申請して、承認状況を確認。</p>
         <span class="card-cta">開く &rarr;</span>
       </a>
     </section>

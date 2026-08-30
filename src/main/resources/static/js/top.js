@@ -43,7 +43,8 @@ window.addEventListener("DOMContentLoaded", () => {
   startClock();
   loadWeather();
   loadTaskAlertSummary();
-  loadHealthAlertSummary();
+  loadAnnouncementUnreadCount();
+  loadOvertimeChip();
 });
 
 // --- ライブ時計(1秒ごとに更新) ---
@@ -125,24 +126,63 @@ async function loadTaskAlertSummary() {
   }
 }
 
-// --- 健康アラート(本日分のみ。件数だけの軽量表示。詳細はhealth-top.html側で確認する) ---
-// メール・Slack等の外部送信はせず、本人がこのページを開いた時だけアプリ内で表示する
-// (HealthAlertService#evaluateAndGetAlertsは呼ぶたびに本日分を再評価するだけで、
-// 同日・同種別の重複登録はしない=何度開いても副作用はない)。
-async function loadHealthAlertSummary() {
-  const banner = document.getElementById("healthAlertBanner");
-  if (!banner) return;
+// --- お知らせ未読件数(件数のみの軽量表示。一覧取得はannouncement.html側で行う) ---
+async function loadAnnouncementUnreadCount() {
+  const chip = document.getElementById("announcementChip");
+  const valueEl = document.getElementById("announcementValue");
+  if (!valueEl) return;
   try {
-    const res = await fetch("/api/health/alerts?days=1");
+    const res = await fetch("/api/announcements/unread-count");
     if (!res.ok) return;
-    const alerts = await res.json();
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const todayCount = (alerts || []).filter((a) => a.triggeredDate === todayStr).length;
-    if (todayCount === 0) return;
+    const data = await res.json();
+    const count = data.unreadCount || 0;
+    if (count > 0) {
+      valueEl.textContent = `未読のお知らせが${count}件あります`;
+      if (chip) chip.classList.add("has-unread");
+    } else {
+      valueEl.textContent = "お知らせはありません";
+      if (chip) chip.classList.remove("has-unread");
+    }
+  } catch (e) {
+    console.error(e);
+    valueEl.textContent = "お知らせを取得できませんでした";
+  }
+}
 
-    document.getElementById("healthAlertText").textContent =
-      `健康チェックで注意が必要な項目が${todayCount}件あります`;
-    banner.hidden = false;
+// --- 残業申請の通知チップ(件数のみの軽量表示。一覧・操作はoveritme.html/admin-overtime.html側で行う) ---
+// 一般ユーザーとADMINで見せる内容が異なるため、まず/api/auth/meでロールを判定してから
+// それぞれの軽量な件数APIを呼ぶ(auth-common.jsが描画するヘッダーのユーザーバーとは別に、
+// このチップ用に単独で取得する)。
+async function loadOvertimeChip() {
+  const chip = document.getElementById("overtimeChip");
+  const valueEl = document.getElementById("overtimeValue");
+  if (!chip || !valueEl) return;
+  try {
+    const meRes = await fetch("/api/auth/me");
+    if (!meRes.ok) return;
+    const me = await meRes.json();
+
+    if (me.role === "ADMIN") {
+      chip.href = "admin-overtime.html";
+      const res = await fetch("/api/admin/overtime-requests/pending-count");
+      if (!res.ok) return;
+      const data = await res.json();
+      const count = data.pendingCount || 0;
+      if (count > 0) {
+        valueEl.textContent = `承認待ちの残業申請が${count}件あります`;
+        chip.hidden = false;
+      }
+    } else {
+      chip.href = "overtime.html";
+      const res = await fetch("/api/overtime-requests/mine/recent-decision-count");
+      if (!res.ok) return;
+      const data = await res.json();
+      const count = data.recentDecisionCount || 0;
+      if (count > 0) {
+        valueEl.textContent = `残業申請の承認/却下が${count}件あります`;
+        chip.hidden = false;
+      }
+    }
   } catch (e) {
     console.error(e);
   }
