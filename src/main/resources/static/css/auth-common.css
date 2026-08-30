@@ -81,6 +81,14 @@
 }
 .auth-note:empty { display: none; }
 
+/* 各入力欄の下に添える軽い補助テキスト(文字種・強度の説明)。.auth-noteのような
+   囲み枠は付けず、入力欄の直下に控えめに表示する(ユーザーID・パスワードの2箇所で使う想定) */
+.field-hint {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
 /* --- スマホ幅対応。.app-headerはstyle.css側でflex-wrapを持たせているため、
    幅が足りない場合はここ(.auth-bar)が折り返して2行目に来る。折り返した際に
    margin-left: auto が中途半端な余白を作らないよう、幅いっぱいに広げて

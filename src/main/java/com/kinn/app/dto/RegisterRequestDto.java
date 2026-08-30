@@ -2,6 +2,7 @@ package com.kinn.app.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,14 +55,23 @@ public class RegisterRequestDto {
     @NotBlank(message = "部署を選択してください")
     private String departmentName;
 
+    // 半角英数字のみ・4〜32文字に制限する(以前は文字種の制約が無く、日本語・記号なども
+    // 入力できてしまっていた。セキュリティレビューで指摘・修正)。既存ユーザーのloginIdは
+    // この変更の影響を受けない(ログイン時のバリデーションではなく新規登録時のみ適用されるため)。
     @NotBlank(message = "ユーザーIDを入力してください")
+    @Size(min = 4, max = 32, message = "ユーザーIDは4文字以上32文字以内で入力してください")
+    @Pattern(regexp = "^[A-Za-z0-9]+$", message = "ユーザーIDは半角英数字のみで入力してください")
     private String loginId;
 
-    // ChangePasswordRequestDtoの新パスワードと同じ最低文字数(8文字)にする。
+    // ChangePasswordRequestDtoの新パスワードと同じ最低文字数(8文字)・複雑さ要件にする
+    // (登録時とパスワード変更時で強度基準が食い違わないようにするため)。
     // 以前はここに@Sizeが無く、登録時(特に会社を新規作成する最初の管理者アカウント)だけ
     // 1文字のパスワードでも作成できてしまっていた(セキュリティレビューで指摘・修正)。
+    // 記号の使用は許可するが必須にはしない(今回の要件に無いため)。
     @NotBlank(message = "パスワードを入力してください")
     @Size(min = 8, message = "パスワードは8文字以上で入力してください")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).+$",
+            message = "パスワードは英字の大文字・小文字・数字をすべて含めてください")
     private String password;
 
     @NotBlank(message = "確認用パスワードを入力してください")

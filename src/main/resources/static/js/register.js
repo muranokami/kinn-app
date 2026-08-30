@@ -1,5 +1,11 @@
 let companyLookupLoadedFor = null;
 
+// バックエンド(RegisterRequestDto)の@Patternと必ず同じ正規表現・基準にする(片方だけ緩いと
+// 実質的にザルになるため)。ここで弾ければ通信せずに済むが、万一ズレてもバックエンド側の
+// @Patternが最終防衛line(readErrorMessageがそのエラーメッセージをそのまま画面に表示する)。
+const LOGIN_ID_PATTERN = /^[A-Za-z0-9]+$/;
+const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).+$/;
+
 // 「新しく会社を登録する」で登録が完了し、会社コード案内(#companyCodePanel)を
 // 表示している間だけtrueにする。この間にタブを閉じる・ブラウザの戻るボタンで
 // 離脱するなど、ページ遷移が起きそうになったらbeforeunloadで確認ダイアログを出し、
@@ -129,6 +135,16 @@ async function handleRegister(e) {
 
   if (!loginId || !password || !confirmPassword || !fullName || !email) {
     statusEl.textContent = "すべての項目を入力してください";
+    statusEl.classList.add("error");
+    return;
+  }
+  if (loginId.length < 4 || loginId.length > 32 || !LOGIN_ID_PATTERN.test(loginId)) {
+    statusEl.textContent = "ユーザーIDは半角英数字のみで、4文字以上32文字以内で入力してください";
+    statusEl.classList.add("error");
+    return;
+  }
+  if (password.length < 8 || !PASSWORD_PATTERN.test(password)) {
+    statusEl.textContent = "パスワードは英字の大文字・小文字・数字をすべて含む8文字以上で入力してください";
     statusEl.classList.add("error");
     return;
   }

@@ -184,12 +184,17 @@ public class HealthAuditAspect {
         return null;
     }
 
-    /** プロキシ経由のアクセスも考慮し、X-Forwarded-Forがあれば先頭(クライアント直近)のIPを使う */
+    /**
+     * 監査ログに記録するIPアドレス。X-Forwarded-Forは誰でも自由に送信できるヘッダーであり、
+     * これを直接信用すると「誰が・どこからアクセスしたか」という監査ログ自体の証跡としての
+     * 信頼性が攻撃者に偽装されてしまう(セキュリティレビューで指摘・修正。
+     * AuthController#clientIpと同じ理由)。getRemoteAddr()はTCP接続の実際の送信元であり
+     * アプリケーションコードでは偽装できない。リバースプロキシ配下で実クライアントIPを
+     * 使いたい場合は、ここでヘッダーを自前でパースするのではなく、Tomcatの
+     * RemoteIpValve(信頼するプロキシのIPを限定した上でgetRemoteAddr()自体を書き換える)を使うこと
+     * (README「本番HTTPS配信チェックリスト」参照)。
+     */
     private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
         return request.getRemoteAddr();
     }
 

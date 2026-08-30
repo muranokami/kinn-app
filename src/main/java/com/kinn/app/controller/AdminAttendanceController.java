@@ -5,6 +5,7 @@ import com.kinn.app.security.AppUserPrincipal;
 import com.kinn.app.service.AdminAttendanceService;
 import com.kinn.app.service.AttendancePeriodResolver;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +17,11 @@ import java.util.List;
  * 従業員・日付・勤務区分・出退勤・実働時間・残業内訳(通常残業/所定休日残業/法定休日残業/総残業)を
  * 確認できる。ログイン中の管理者と同じ会社の社員のみを対象とする(他社のデータは含めない)。
  * 「休日勤務状況(管理者)」という休日時間の合計だけを表示する専用APIは復活させていない。
+ * クラスレベルの@PreAuthorizeも多層防御として付与している(SecurityConfigのjavadoc参照)。
  */
 @RestController
 @RequestMapping("/api/admin/attendance")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminAttendanceController {
 
     private final AdminAttendanceService adminAttendanceService;

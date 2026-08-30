@@ -7,6 +7,7 @@ import com.kinn.app.dto.ScheduleEventDto;
 import com.kinn.app.security.AppUserPrincipal;
 import com.kinn.app.service.AdminScheduleService;
 import com.kinn.app.service.DepartmentScheduleService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +17,11 @@ import java.util.List;
  * 管理者向け部署別スケジュールAPI(①②③)。
  * ログイン中の管理者と同じ会社の部署・従業員のみを対象とする(他社のデータは含めない。⑨⑩)。
  * /api/admin/** は SecurityConfig で hasRole("ADMIN") に限定済みのため、一般ユーザーは到達できない。
+ * クラスレベルの@PreAuthorizeも多層防御として付与している(SecurityConfigのjavadoc参照)。
  */
 @RestController
 @RequestMapping("/api/admin/schedule")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminScheduleController {
 
     private final AdminScheduleService adminScheduleService;

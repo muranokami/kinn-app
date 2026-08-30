@@ -7,6 +7,12 @@
 // ユーザーIDの入力・一致確認をもって本人確認とする)。
 // ------------------------------------------------------------------
 
+// バックエンド(ChangePasswordRequestDto)の@Patternと必ず同じ正規表現・基準にする
+// (RegisterRequestDto.passwordと同じ強度基準。片方だけ緩いと実質的にザルになるため)。
+// loginIdは既存ユーザーの本人確認用の入力(新規作成ではない)であり、過去に緩い基準で
+// 作成されたIDも変更なく使い続けられる必要があるため、ここでは文字種チェックを行わない。
+const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).+$/;
+
 window.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("changePasswordForm").addEventListener("submit", handleChangePassword);
   await applyAccessState();
@@ -57,6 +63,11 @@ async function handleChangePassword(e) {
 
   if (!loginId || !newPassword || !confirmPassword) {
     statusEl.textContent = "すべての項目を入力してください";
+    statusEl.classList.add("error");
+    return;
+  }
+  if (newPassword.length < 8 || !PASSWORD_PATTERN.test(newPassword)) {
+    statusEl.textContent = "新しいパスワードは英字の大文字・小文字・数字をすべて含む8文字以上で入力してください";
     statusEl.classList.add("error");
     return;
   }

@@ -109,10 +109,16 @@
       </div>
 
       <label class="field">ユーザーID
-        <input id="loginId" type="text" autocomplete="username" required />
+        <input id="loginId" type="text" autocomplete="username" required
+               minlength="4" maxlength="32" pattern="[A-Za-z0-9]+"
+               title="半角英数字のみ、4〜32文字で入力してください" />
+        <span class="field-hint">半角英数字のみ、4〜32文字で入力してください</span>
       </label>
       <label class="field">パスワード(8文字以上)
-        <input id="password" type="password" autocomplete="new-password" minlength="8" required />
+        <input id="password" type="password" autocomplete="new-password" minlength="8" required
+               pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).+"
+               title="英字の大文字・小文字・数字をすべて含む8文字以上で入力してください" />
+        <span class="field-hint">英字の大文字・小文字・数字をすべて含む8文字以上で入力してください</span>
       </label>
       <label class="field">パスワード確認
         <input id="confirmPassword" type="password" autocomplete="new-password" required />

@@ -159,6 +159,15 @@ body {
 .info-chip-value { font-weight: 700; font-variant-numeric: tabular-nums; }
 #clockChip .info-chip-value { color: var(--kon); min-width: 4.5em; text-align: center; }
 
+/* --- お知らせチップ(未読件数。クリックでannouncement.htmlへ遷移) --- */
+a.info-chip {
+  text-decoration: none;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+a.info-chip:hover { box-shadow: 0 4px 14px rgba(35, 39, 46, 0.10); }
+#announcementChip.has-unread .info-chip-value { color: var(--shu-deep); }
+
 /* --- タスク締め切りアラート(トップページ) --- */
 .task-alert-banner {
   display: flex;

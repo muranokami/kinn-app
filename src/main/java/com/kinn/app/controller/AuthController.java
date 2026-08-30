@@ -208,11 +208,25 @@ public class AuthController {
         }
     }
 
+    /**
+     * レート制限の対象キーとするIPアドレスを取得する。
+     *
+     * 以前は {@code X-Forwarded-For} ヘッダーを直接読んで最初の値を使っていたが、これは
+     * 誰でも自由に送信できる普通のHTTPヘッダーであり、リバースプロキシを経由しない
+     * 直接アクセスに対しては、攻撃者がリクエストのたびに異なる値を偽装するだけで
+     * IPアドレス単位のレート制限を完全に回避できてしまう(セキュリティレビューで指摘・修正)。
+     * 特に company-lookup はこのレート制限以外に総当たり対策を持たないため、実害が大きい。
+     *
+     * {@link HttpServletRequest#getRemoteAddr()} はTCP接続の実際の送信元であり、
+     * アプリケーションコードでは偽装できない。リバースプロキシ配下で実際のクライアントIPを
+     * 使いたい場合は、ここでヘッダーを自前でパースするのではなく、Tomcatの
+     * RemoteIpValve(`server.forward-headers-strategy=framework` +
+     * `server.tomcat.remoteip.internal-proxies` で信頼するプロキシのIPを限定)を使うこと。
+     * その場合はコンテナ側が「信頼できるプロキシ経由のリクエストか」を検証した上で
+     * getRemoteAddr() 自体を安全に書き換えてくれるため、このメソッドの実装を変える必要はない
+     * (README「本番HTTPS配信チェックリスト」参照)。
+     */
     private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
         return request.getRemoteAddr();
     }
 }
