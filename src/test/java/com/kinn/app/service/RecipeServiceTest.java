@@ -81,8 +81,8 @@ class RecipeServiceTest {
     @Test
     void 同名の既存レシピがあればAIを呼ばずにそれを返す() {
         Recipe existing = Recipe.builder().id(10L).employeeId(EMPLOYEE_ID).name("鶏肉の照り焼き").build();
-        when(recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(EMPLOYEE_ID, "鶏肉の照り焼き"))
-                .thenReturn(Optional.of(existing));
+        when(recipeRepository.findByEmployeeIdOrderByIdDesc(EMPLOYEE_ID))
+                .thenReturn(List.of(existing));
 
         RecipeGenerateRequestDto req = new RecipeGenerateRequestDto();
         req.setDishName("鶏肉の照り焼き");
@@ -96,8 +96,8 @@ class RecipeServiceTest {
 
     @Test
     void 既存レシピが無くAIが利用可能な場合は生成して保存する() {
-        when(recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(EMPLOYEE_ID, "鶏肉の照り焼き"))
-                .thenReturn(Optional.empty());
+        when(recipeRepository.findByEmployeeIdOrderByIdDesc(EMPLOYEE_ID))
+                .thenReturn(List.of());
         when(aiMealClient.isConfigured()).thenReturn(true);
         when(aiMealClient.generateRecipe(any())).thenReturn(Optional.of(rawRecipe()));
         when(recipeRepository.save(any())).thenAnswer(inv -> {
@@ -121,8 +121,8 @@ class RecipeServiceTest {
 
     @Test
     void AIが未設定の場合は503エラーになりレシピは保存されない() {
-        when(recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(EMPLOYEE_ID, "未登録の料理"))
-                .thenReturn(Optional.empty());
+        when(recipeRepository.findByEmployeeIdOrderByIdDesc(EMPLOYEE_ID))
+                .thenReturn(List.of());
         when(aiMealClient.isConfigured()).thenReturn(false);
 
         RecipeGenerateRequestDto req = new RecipeGenerateRequestDto();
@@ -136,8 +136,8 @@ class RecipeServiceTest {
 
     @Test
     void AI呼び出しが失敗した場合はエラーになりレシピは保存されない() {
-        when(recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(EMPLOYEE_ID, "未登録の料理"))
-                .thenReturn(Optional.empty());
+        when(recipeRepository.findByEmployeeIdOrderByIdDesc(EMPLOYEE_ID))
+                .thenReturn(List.of());
         when(aiMealClient.isConfigured()).thenReturn(true);
         when(aiMealClient.generateRecipe(any())).thenReturn(Optional.empty());
 
@@ -152,8 +152,8 @@ class RecipeServiceTest {
 
     @Test
     void AIが材料も手順も空で返した場合はエラーになる() {
-        when(recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(EMPLOYEE_ID, "未登録の料理"))
-                .thenReturn(Optional.empty());
+        when(recipeRepository.findByEmployeeIdOrderByIdDesc(EMPLOYEE_ID))
+                .thenReturn(List.of());
         when(aiMealClient.isConfigured()).thenReturn(true);
         AiRawRecipeDto empty = new AiRawRecipeDto();
         empty.setIngredients(List.of());
@@ -168,8 +168,8 @@ class RecipeServiceTest {
 
     @Test
     void AIが不正な調理方法を返しても落ちずOTHER扱いになる() {
-        when(recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(EMPLOYEE_ID, "鶏肉の照り焼き"))
-                .thenReturn(Optional.empty());
+        when(recipeRepository.findByEmployeeIdOrderByIdDesc(EMPLOYEE_ID))
+                .thenReturn(List.of());
         when(aiMealClient.isConfigured()).thenReturn(true);
         AiRawRecipeDto raw = rawRecipe();
         raw.setCookingMethod("そんな調理法はない");
@@ -192,8 +192,8 @@ class RecipeServiceTest {
 
     @Test
     void AI取得後のDB保存で例外が発生すると500エラーになりAI呼び出し失敗とは区別される() {
-        when(recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(EMPLOYEE_ID, "鶏肉の照り焼き"))
-                .thenReturn(Optional.empty());
+        when(recipeRepository.findByEmployeeIdOrderByIdDesc(EMPLOYEE_ID))
+                .thenReturn(List.of());
         when(aiMealClient.isConfigured()).thenReturn(true);
         when(aiMealClient.generateRecipe(any())).thenReturn(Optional.of(rawRecipe()));
         when(recipeRepository.save(any())).thenThrow(new RuntimeException("DB接続エラー(テスト用)"));
@@ -220,8 +220,8 @@ class RecipeServiceTest {
     @Test
     void mealRecordIdを指定すると解決したレシピが本人の食事記録に紐付けられる() {
         Recipe existing = Recipe.builder().id(10L).employeeId(EMPLOYEE_ID).name("鶏肉の照り焼き").build();
-        when(recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(EMPLOYEE_ID, "鶏肉の照り焼き"))
-                .thenReturn(Optional.of(existing));
+        when(recipeRepository.findByEmployeeIdOrderByIdDesc(EMPLOYEE_ID))
+                .thenReturn(List.of(existing));
         MealRecord record = MealRecord.builder().id(5L).employeeId(EMPLOYEE_ID).build();
         when(mealRecordRepository.findByIdAndEmployeeId(5L, EMPLOYEE_ID)).thenReturn(Optional.of(record));
         when(mealRecordRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -238,8 +238,8 @@ class RecipeServiceTest {
     @Test
     void 他人の食事記録IDを指定してもレシピは紐付けられない() {
         Recipe existing = Recipe.builder().id(10L).employeeId(EMPLOYEE_ID).name("鶏肉の照り焼き").build();
-        when(recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(EMPLOYEE_ID, "鶏肉の照り焼き"))
-                .thenReturn(Optional.of(existing));
+        when(recipeRepository.findByEmployeeIdOrderByIdDesc(EMPLOYEE_ID))
+                .thenReturn(List.of(existing));
         // 他人の食事記録IDのため、本人のemployeeIdでは見つからない
         when(mealRecordRepository.findByIdAndEmployeeId(999L, EMPLOYEE_ID)).thenReturn(Optional.empty());
 

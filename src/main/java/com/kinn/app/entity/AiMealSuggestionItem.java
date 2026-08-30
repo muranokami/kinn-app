@@ -1,11 +1,19 @@
 package com.kinn.app.entity;
 
+import com.kinn.app.security.crypto.EncryptedDoubleConverter;
+import com.kinn.app.security.crypto.EncryptedIntegerConverter;
+import com.kinn.app.security.crypto.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
 /**
  * AI献立提案1回分({@link AiMealSuggestion})に含まれる1食分(朝食/昼食/夕食のいずれか)。
  * suggestionId で親を参照する(このアプリの既存Entityに倣い@ManyToOneは使わない)。
+ *
+ * 料理名・使用食材・栄養素・おすすめ理由は食生活や健康状態を推測しうる情報のため、
+ * MealRecordと同様に{@code @Convert}でDB保存前にAES-256-GCM暗号化する
+ * (HealthDataEncryptor参照。V9マイグレーションで対象列をtextへ変更)。mealType(区分)・
+ * cookingMinutes(数値メタ情報)は暗号化しない。
  */
 @Entity
 @Table(name = "ai_meal_suggestion_item")
@@ -29,23 +37,29 @@ public class AiMealSuggestionItem {
     @Column(name = "meal_type", nullable = false, length = 32)
     private MealType mealType;
 
-    @Column(name = "dish_name", length = 200)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "dish_name", columnDefinition = "text")
     private String dishName;
 
     /** 使用食材(カンマ区切りの自由記述) */
-    @Column(name = "ingredients", length = 500)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "ingredients", columnDefinition = "text")
     private String ingredients;
 
-    @Column(name = "calories")
+    @Convert(converter = EncryptedIntegerConverter.class)
+    @Column(name = "calories", columnDefinition = "text")
     private Integer calories;
 
-    @Column(name = "protein_g")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "protein_g", columnDefinition = "text")
     private Double proteinG;
 
-    @Column(name = "fat_g")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "fat_g", columnDefinition = "text")
     private Double fatG;
 
-    @Column(name = "carbs_g")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "carbs_g", columnDefinition = "text")
     private Double carbsG;
 
     /** おおよその調理時間(分) */
@@ -53,6 +67,7 @@ public class AiMealSuggestionItem {
     private Integer cookingMinutes;
 
     /** この献立をおすすめする理由 */
-    @Column(name = "reason", length = 1000)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "reason", columnDefinition = "text")
     private String reason;
 }

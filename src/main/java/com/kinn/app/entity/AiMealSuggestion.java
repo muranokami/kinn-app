@@ -1,5 +1,6 @@
 package com.kinn.app.entity;
 
+import com.kinn.app.security.crypto.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,6 +14,12 @@ import java.time.LocalDateTime;
  *
  * 「別の献立を提案」を押すたびに attemptNo をインクリメントして新しい行を追加する
  * (過去の提案も履歴として残るため、上書きはしない)。
+ *
+ * summaryNoteはAIが前日の記録等を踏まえて生成する自由記述文であり、食生活や健康状態を
+ * 推測しうる情報のため、他の食事関連データと同様に{@code @Convert}でDB保存前に
+ * AES-256-GCM暗号化する(HealthDataEncryptor参照。V9マイグレーションで対象列をtextへ変更)。
+ * suggestionDate/attemptNoはクエリ条件(countByEmployeeIdAndSuggestionDate等)に使うため、
+ * sourceは低感度な区分のため、それぞれ暗号化しない。
  */
 @Entity
 @Table(name = "ai_meal_suggestion")
@@ -49,7 +56,8 @@ public class AiMealSuggestion {
     private AiSuggestionSource source;
 
     /** 提案全体の総評・前提(例:「前日の記録が少ないため一般的なバランスで提案」) */
-    @Column(name = "summary_note", length = 500)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "summary_note", columnDefinition = "text")
     private String summaryNote;
 
     /** ユーザーが「⭐ この献立を保存」を押したかどうか */

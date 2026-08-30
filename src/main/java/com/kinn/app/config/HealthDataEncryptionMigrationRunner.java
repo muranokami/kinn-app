@@ -12,8 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 健康管理データ(health_profile / health_record / health_check)の既存レコードを
- * アプリ層の暗号化(HealthDataEncryptor, AES-256-GCM)へ移行する(セキュリティレビュー③対応)。
+ * 健康管理データ(health_profile / health_record / health_check / meal_record / recipe /
+ * recipe_ingredient / recipe_step / ai_meal_suggestion / ai_meal_suggestion_item)の既存
+ * レコードをアプリ層の暗号化(HealthDataEncryptor, AES-256-GCM)へ移行する
+ * (セキュリティレビュー③④対応)。
  *
  * V5マイグレーションで対象列をtextへ変更しただけでは、既存データは依然として平文
  * (数値やEnum名の文字列表現)のまま残っている。このランナーは起動のたびに、各列の値が
@@ -48,10 +50,27 @@ public class HealthDataEncryptionMigrationRunner implements CommandLineRunner {
                 "condition", "memo");
         migrateTable("health_check",
                 "condition_level", "sleep_hours", "fatigue_level", "exercise_minutes", "body_temperature", "memo");
-        // V6対応分(健康アラート種別・食の好み情報)
-        migrateTable("health_alert", "alert_type", "severity", "message");
+        // V6対応分(食の好み情報)。health_alertは2026-08-30のアラート機能撤廃(V7マイグレーション)
+        // により対象から外れた(既存データは削除済み・新規行も発生しないため、ここに残しても
+        // 常に0件処理になるだけの無駄な参照だった)。
         migrateTable("user_food_preference",
                 "favorite_foods", "disliked_foods", "allergies", "dietary_restrictions");
+        // V8対応分(食事記録)。meal_type/meal_date/meal_time/recipe_idはクエリ条件に使うため
+        // 暗号化対象外(MealRecordエンティティのjavadoc参照)。
+        migrateTable("meal_record",
+                "dish_name", "items", "amount", "calories", "protein_g", "fat_g", "carbs_g", "fiber_g",
+                "salt_g", "photo_url", "memo");
+        // V9対応分(レシピ・AI献立提案)。cooking_method/source/meal_typeは区分値かつクエリ条件に
+        // 使うため暗号化対象外(Recipe/AiMealSuggestion/AiMealSuggestionItemエンティティの
+        // javadoc参照)。
+        migrateTable("recipe",
+                "name", "equipment", "memo", "calories", "protein_g", "fat_g", "carbs_g", "salt_g",
+                "reheat_method");
+        migrateTable("recipe_ingredient", "name", "quantity", "unit");
+        migrateTable("recipe_step", "description");
+        migrateTable("ai_meal_suggestion", "summary_note");
+        migrateTable("ai_meal_suggestion_item",
+                "dish_name", "ingredients", "calories", "protein_g", "fat_g", "carbs_g", "reason");
     }
 
     private void migrateTable(String table, String... columns) {

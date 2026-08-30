@@ -158,7 +158,7 @@ public class RecipeService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "料理名は必須です");
         }
 
-        Optional<Recipe> existing = recipeRepository.findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(employeeId, dishName);
+        Optional<Recipe> existing = findExistingByName(employeeId, dishName);
         Recipe recipe;
         if (existing.isPresent()) {
             recipe = existing.get();
@@ -173,6 +173,20 @@ public class RecipeService {
         List<RecipeIngredient> ingredients = ingredientRepository.findByRecipeIdOrderByDisplayOrderAsc(recipe.getId());
         List<RecipeStep> steps = stepRepository.findByRecipeIdOrderByStepNoAsc(recipe.getId());
         return toDetailDto(recipe, ingredients, steps);
+    }
+
+    /**
+     * 同名レシピの検索(⑨同じ料理について不要な重複レシピを作らないための照合)。
+     * 大文字小文字を区別しない完全一致。同名が複数ある場合は最新のものを返す。
+     *
+     * Recipe.nameは暗号化済み(ランダムIVのため同じ値でも暗号文が毎回異なる)であり、
+     * DB側でのWHERE name = ?検索ができないため、employeeIdで絞り込んだ全件を取得したうえで
+     * 復号済みのJava文字列同士を比較する(HealthAlertServiceの重複判定と同じ方針)。
+     */
+    private Optional<Recipe> findExistingByName(String employeeId, String dishName) {
+        return recipeRepository.findByEmployeeIdOrderByIdDesc(employeeId).stream()
+                .filter(r -> dishName.equalsIgnoreCase(r.getName()))
+                .findFirst();
     }
 
     private Recipe generateAndSaveViaAi(String employeeId, String dishName, String ingredientsHint) {
