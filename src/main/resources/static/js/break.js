@@ -44,35 +44,39 @@ async function refreshBreakStatus(triggeredByCountdown) {
 
 async function onBreakStartClick() {
   const btn = document.getElementById("breakStartBtn");
-  btn.disabled = true;
+  setButtonLoading(btn, true);
   ensureNotificationPermission();
   try {
     const res = await fetch("/api/attendance/break/start", { method: "POST" });
     if (!res.ok) throw new Error(await breakReadErrorMessage(res, "休憩の開始に失敗しました。"));
     const dto = await res.json();
+    // 成功時はapplyBreakStatus側がボタンの表示・有効/無効を状態に応じて設定し直すため、
+    // ここではis-loading表示だけ解除しておく
+    setButtonLoading(btn, false);
     applyBreakStatus(dto, false);
     setBreakStatusMessage("");
   } catch (e) {
     console.error(e);
     setBreakStatusMessage(e.message || "休憩の開始に失敗しました。");
-    btn.disabled = false;
+    setButtonLoading(btn, false);
   }
 }
 
 async function onBreakEndClick() {
   const btn = document.getElementById("breakEndBtn");
-  btn.disabled = true;
+  setButtonLoading(btn, true);
   try {
     const res = await fetch("/api/attendance/break/end", { method: "POST" });
     if (!res.ok) throw new Error(await breakReadErrorMessage(res, "休憩の終了に失敗しました。"));
     const dto = await res.json();
+    setButtonLoading(btn, false);
     applyBreakStatus(dto, false); // 手動終了なので、大きなアラートモーダルは出さない
     // 「残り◯分取れます」「本日の休憩時間を使い切りました」など、サーバーからの案内文を表示する
     setBreakStatusMessage(dto.message || "");
   } catch (e) {
     console.error(e);
     setBreakStatusMessage(e.message || "休憩の終了に失敗しました。");
-    btn.disabled = false;
+    setButtonLoading(btn, false);
   }
 }
 

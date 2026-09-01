@@ -97,6 +97,7 @@ async function load() {
   const statusEl = document.getElementById("listStatus");
   statusEl.textContent = "読み込み中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
 
   const keyword = document.getElementById("searchKeyword").value.trim();
   const departmentId = document.getElementById("departmentFilter").value;
@@ -114,6 +115,8 @@ async function load() {
     console.error(e);
     statusEl.textContent = e.message || "読み込みエラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -192,6 +195,7 @@ async function handleProfileSave() {
   }
   statusEl.textContent = "保存中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/employees/${currentEmployeeId}`, {
       method: "PUT",
@@ -205,6 +209,8 @@ async function handleProfileSave() {
     console.error(e);
     statusEl.textContent = e.message || "保存エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -216,6 +222,7 @@ async function handleDelete() {
   const statusEl = document.getElementById("detailStatus");
   statusEl.textContent = "削除中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/employees/${currentEmployeeId}`, { method: "DELETE" });
     if (!res.ok) throw new Error(await readErrorMessage(res, "削除に失敗しました"));
@@ -227,6 +234,8 @@ async function handleDelete() {
     console.error(e);
     statusEl.textContent = e.message || "削除エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -236,6 +245,7 @@ async function handleRoleSave() {
   const role = document.getElementById("roleSelect").value;
   statusEl.textContent = "保存中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/employees/${currentEmployeeId}/role`, {
       method: "PUT",
@@ -250,6 +260,8 @@ async function handleRoleSave() {
     console.error(e);
     statusEl.textContent = e.message || "保存エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -260,6 +272,7 @@ async function handleDepartmentSave() {
   const departmentId = value ? Number(value) : null;
   statusEl.textContent = "保存中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/employees/${currentEmployeeId}/department`, {
       method: "PUT",
@@ -274,6 +287,8 @@ async function handleDepartmentSave() {
     console.error(e);
     statusEl.textContent = e.message || "保存エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -284,6 +299,7 @@ async function handleEnabledSave() {
   if (!enabled && !confirm("このアカウントを無効化します。以後ログインできなくなります。よろしいですか？")) return;
   statusEl.textContent = "保存中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/employees/${currentEmployeeId}/enabled`, {
       method: "PUT",
@@ -298,6 +314,8 @@ async function handleEnabledSave() {
     console.error(e);
     statusEl.textContent = e.message || "保存エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -312,6 +330,7 @@ async function handleResetPassword() {
   const statusEl = document.getElementById("detailStatus");
   statusEl.textContent = "リセット中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/employees/${currentEmployeeId}/reset-password`, { method: "POST" });
     if (!res.ok) throw new Error(await readErrorMessage(res, "パスワードのリセットに失敗しました"));
@@ -324,6 +343,8 @@ async function handleResetPassword() {
     console.error(e);
     statusEl.textContent = e.message || "リセットエラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -375,6 +396,7 @@ async function handleCreate(e) {
 
   statusEl.textContent = "登録中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch("/api/admin/employees", {
       method: "POST",
@@ -391,6 +413,8 @@ async function handleCreate(e) {
     console.error(e2);
     statusEl.textContent = e2.message || "登録エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 

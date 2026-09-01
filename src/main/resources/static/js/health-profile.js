@@ -14,7 +14,7 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 async function loadProfile() {
-  setStatus("読み込み中...", false);
+  setStatus("読み込み中...", false, true);
   try {
     const res = await fetch(`/api/health/profile?employeeId=${HEALTH_EMPLOYEE_ID}`);
     if (!res.ok) throw new Error("読み込みに失敗しました");
@@ -78,7 +78,7 @@ async function saveProfile() {
     healthMemo: strOrNull("healthMemo"),
   };
 
-  setStatus("保存中...", false);
+  setStatus("保存中...", false, true);
   try {
     const res = await fetch(`/api/health/profile?employeeId=${HEALTH_EMPLOYEE_ID}`, {
       method: "PUT",
@@ -95,10 +95,11 @@ async function saveProfile() {
   }
 }
 
-function setStatus(msg, isError) {
+function setStatus(msg, isError, isLoading) {
   const el = document.getElementById("statusMsg");
   el.textContent = msg;
   el.classList.toggle("error", !!isError);
+  el.classList.toggle("is-loading", !!isLoading);
 }
 
 /**
@@ -116,6 +117,7 @@ async function deleteAllHealthData() {
 
   statusEl.textContent = "削除中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch("/api/health/self-data", { method: "DELETE" });
     if (!res.ok) throw new Error("削除に失敗しました");
@@ -131,5 +133,7 @@ async function deleteAllHealthData() {
     console.error(e);
     statusEl.textContent = e.message || "削除エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }

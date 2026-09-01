@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - 残業申請</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/overtime-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="index.html" class="back-link" title="トップページへ戻る">&laquo; トップ</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">残業申請</p>
+  </header>
+
+  <main class="container">
+    <span id="statusMsg" class="status-msg"></span>
+
+    <!-- 残業申請フォーム(事前申請制)。対象日は本日以降のみ指定できる -->
+    <section class="event-form-wrap">
+      <h2>残業を申請する</h2>
+      <form id="createForm" class="event-form">
+        <div class="field">
+          <label for="c_targetDate">対象日</label>
+          <input type="date" id="c_targetDate" required />
+        </div>
+        <div class="field">
+          <label for="c_plannedMinutes">予定残業時間(分)</label>
+          <input type="number" id="c_plannedMinutes" min="1" max="1440" step="1" required placeholder="例: 60" />
+        </div>
+        <div class="field field-grow">
+          <label for="c_reason">理由</label>
+          <textarea id="c_reason" rows="3" maxlength="500" required placeholder="例: 月次締め処理のため"></textarea>
+        </div>
+        <div class="field field-actions">
+          <button type="submit" class="btn btn-success">申請</button>
+        </div>
+      </form>
+      <p class="announcement-note">
+        当日または前日までに申請してください。承認された申請は「予定」として保存されるだけで、
+        実際の勤務実績(打刻から計算される残業時間)を自動的に書き換えることはありません。
+      </p>
+    </section>
+
+    <!-- 自分の申請履歴一覧。ステータス(承認待ち/承認済み/却下)ごとにバッジで表示 -->
+    <section class="table-wrap event-list-wrap">
+      <h2 style="padding:14px 16px 0;font-size:15px;color:var(--kon);">申請履歴</h2>
+      <div class="overtime-list" id="overtimeList"></div>
+      <p class="overtime-empty" id="overtimeEmpty" hidden>まだ申請はありません。</p>
+    </section>
+  </main>
+
+  <!-- 取り下げ確認モーダル -->
+  <div class="modal-overlay" id="withdrawConfirmModal" hidden>
+    <div class="modal-box">
+      <h2>この申請を取り下げますか？</h2>
+      <p class="announcement-note" id="withdrawConfirmSummary"></p>
+      <div class="modal-close-row">
+        <button type="button" class="btn btn-secondary" id="withdrawConfirmCancelBtn">キャンセル</button>
+        <button type="button" class="btn btn-danger" id="withdrawConfirmOkBtn">取り下げる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/overtime.js"></script>
+</body>
+</html>

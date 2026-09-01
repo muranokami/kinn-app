@@ -11,6 +11,7 @@ import com.kinn.app.dto.PasswordResetResultDto;
 import com.kinn.app.security.AppUserPrincipal;
 import com.kinn.app.service.AdminEmployeeService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +20,11 @@ import java.util.List;
 /**
  * 管理者向け従業員管理API。ログイン中の管理者と同じ会社の従業員のみを対象とする
  * (他社の従業員IDを指定しても404になる。会社単位のアクセス制御はService層で実施)。
+ * クラスレベルの@PreAuthorizeも多層防御として付与している(SecurityConfigのjavadoc参照)。
  */
 @RestController
 @RequestMapping("/api/admin/employees")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminEmployeeController {
 
     private final AdminEmployeeService adminEmployeeService;

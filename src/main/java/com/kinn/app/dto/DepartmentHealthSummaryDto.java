@@ -12,7 +12,7 @@ import lombok.Setter;
  * 部署マスタが整備された際にはそちらに置き換えられる想定。
  *
  * insufficientData=true の場合、employeeCount(と部署名)以外の集計値は意図的にnullのまま
- * (AdminHealthServiceのjavadoc参照)。人数が少ない部署で平均値・アラート件数をそのまま
+ * (AdminHealthServiceのjavadoc参照)。人数が少ない部署で平均値をそのまま
  * 出すと、実質的に個人の健康状態を特定できてしまうため、しきい値未満の部署は数値を返さない。
  */
 @Getter
@@ -31,5 +31,4 @@ public class DepartmentHealthSummaryDto {
     private Double avgSleepHours;
     private Double avgFatigueLevel;
     private Double avgOvertimeHours;
-    private Long alertCount;
 }

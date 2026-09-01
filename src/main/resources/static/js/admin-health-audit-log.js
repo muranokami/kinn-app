@@ -48,6 +48,7 @@ async function search() {
   const status = document.getElementById("statusMsg");
   status.textContent = "検索中...";
   status.classList.remove("error");
+  status.classList.add("is-loading");
 
   const params = new URLSearchParams();
   const from = document.getElementById("fromDate").value;
@@ -73,6 +74,8 @@ async function search() {
     console.error(e);
     status.textContent = "検索に失敗しました";
     status.classList.add("error");
+  } finally {
+    status.classList.remove("is-loading");
   }
 }
 

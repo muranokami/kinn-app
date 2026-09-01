@@ -517,3 +517,101 @@ td.readonly-val {
   color: var(--ink-soft);
   margin: 28px 0 12px;
 }
+
+/* ==============================================================
+   ローディング状態の共通スタイル(項目2)。
+   これまで画面ごとに「ボタンをdisabledにする」「ステータス文言を
+   直接書き換える」といった個別実装がバラバラに存在していたが、
+   見た目はすべてこの is-loading クラスの付け外しに一元化する。
+   JS側はclassList.toggle("is-loading", ...)を呼ぶだけにし、実際の
+   表現(スピナー・文字を薄くする・カーソル)はここでまとめて管理する。
+   ボタンについては auth-common.js の setButtonLoading() がこのクラスと
+   disabled属性を同時に切り替える(CSSだけではクリックを止められないため)。
+   ============================================================== */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- ボタン: 文字を透明にして隠しつつ、中央に小さなスピナーを表示する --- */
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.btn.is-loading {
+  position: relative;
+  color: transparent !important;
+  opacity: 1;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+/* 背景が白いボタン(枠線のみ)はスピナーも本文色に合わせて濃色にする */
+.btn-secondary.is-loading::after {
+  border-color: rgba(31, 58, 95, 0.25);
+  border-top-color: var(--kon);
+}
+.btn-danger.is-loading::after {
+  border-color: rgba(156, 46, 35, 0.25);
+  border-top-color: var(--shu-deep);
+}
+.btn-sm.is-loading::after {
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+}
+
+/* --- ボタン以外(.status-msg・一覧の空行など)の「読み込み中」表示。
+   文字を薄くし、先頭に同じ回転スピナーを添える --- */
+.status-msg.is-loading,
+.alert-empty.is-loading,
+.empty-row.is-loading td {
+  color: var(--ink-soft) !important;
+}
+.status-msg.is-loading::before,
+.alert-empty.is-loading::before,
+.empty-row.is-loading td::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border: 2px solid var(--paper-line);
+  border-top-color: var(--ink-soft);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* リンクを一時的に操作不可にする場合(ボタンと違いdisabled属性が使えないため)。
+   register.jsの「ログイン画面へ戻る」リンク等、送信中の離脱防止に使う。 */
+[aria-disabled="true"] {
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* --- 一覧の初回読み込み中に表示する簡易スケルトン(薄いグレーのプレースホルダー) --- */
+.skeleton-line {
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #EFEAE0 25%, #F7F3EA 37%, #EFEAE0 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+.skeleton-line + .skeleton-line { margin-top: 8px; }
+@keyframes skeleton-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}

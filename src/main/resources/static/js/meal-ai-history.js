@@ -29,7 +29,7 @@ function updateAiHistoryActiveTab() {
 
 async function loadAiHistory() {
   const listEl = document.getElementById("aiHistoryList");
-  listEl.innerHTML = `<p class="alert-empty">読み込み中...</p>`;
+  listEl.innerHTML = buildSkeletonBlock();
   const to = new Date();
   const from = new Date();
   from.setDate(from.getDate() - healthPeriodDays(aiHistoryPeriod) + 1);

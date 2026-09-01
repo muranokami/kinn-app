@@ -44,7 +44,6 @@ function renderSummary(d) {
   setVal("s_avgSleepHours", d.avgSleepHours ?? "-");
   setVal("s_avgFatigueLevel", d.avgFatigueLevel ?? "-");
   setVal("s_avgOvertimeHours", d.avgOvertimeHours ?? "-");
-  setVal("s_alertCount", d.alertCount);
 }
 
 function setVal(id, value) {
@@ -94,13 +93,12 @@ function renderDepartmentDetail() {
   setVal("d_avgSleepHours", dept.avgSleepHours ?? "-");
   setVal("d_avgFatigueLevel", dept.avgFatigueLevel ?? "-");
   setVal("d_avgOvertimeHours", dept.avgOvertimeHours ?? "-");
-  setVal("d_alertCount", dept.alertCount);
 }
 
 function renderDepartments(departments) {
   const tbody = document.getElementById("deptTbody");
   if (!departments || departments.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">データがありません</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">データがありません</td></tr>`;
     return;
   }
   tbody.innerHTML = "";
@@ -110,7 +108,7 @@ function renderDepartments(departments) {
       tr.innerHTML = `
         <td>${escapeHtml(d.department)}</td>
         <td>${d.employeeCount}</td>
-        <td colspan="5" style="text-align:center; color:var(--ink-soft);">対象人数が少ないため集計を表示できません</td>
+        <td colspan="4" style="text-align:center; color:var(--ink-soft);">対象人数が少ないため集計を表示できません</td>
       `;
     } else {
       tr.innerHTML = `
@@ -120,7 +118,6 @@ function renderDepartments(departments) {
         <td>${d.avgSleepHours ?? "-"}</td>
         <td>${d.avgFatigueLevel ?? "-"}</td>
         <td>${d.avgOvertimeHours ?? "-"}</td>
-        <td>${d.alertCount}</td>
       `;
     }
     tbody.appendChild(tr);

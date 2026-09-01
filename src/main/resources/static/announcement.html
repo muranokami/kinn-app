@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - お知らせ</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/announcement-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="index.html" class="back-link" title="トップページへ戻る">&laquo; トップ</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">お知らせ</p>
+  </header>
+
+  <main class="container">
+    <span id="statusMsg" class="status-msg"></span>
+
+    <!-- 全社向け、または自分の部署宛のお知らせのみ表示される。重要度→投稿日時の新しい順 -->
+    <div class="announcement-list" id="announcementList"></div>
+    <p class="announcement-empty" id="announcementEmpty" hidden>現在、表示できるお知らせはありません。</p>
+  </main>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/announcement.js"></script>
+</body>
+</html>

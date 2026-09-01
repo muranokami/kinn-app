@@ -5,6 +5,7 @@ import com.kinn.app.dto.DepartmentDto;
 import com.kinn.app.security.AppUserPrincipal;
 import com.kinn.app.service.DepartmentService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,9 +13,11 @@ import java.util.List;
 
 /**
  * 管理者向け部署管理API。ログイン中の管理者と同じ会社の部署のみを対象とする。
+ * クラスレベルの@PreAuthorizeも多層防御として付与している(SecurityConfigのjavadoc参照)。
  */
 @RestController
 @RequestMapping("/api/admin/departments")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminDepartmentController {
 
     private final DepartmentService departmentService;

@@ -44,6 +44,38 @@
   cursor: not-allowed;
 }
 
+/* --- ローディング状態(is-loading)。style.cssの.btn.is-loadingと同じ考え方で、
+   この画面(top.html)はstyle.cssを読み込んでいないためここに個別定義する。
+   文字を透明にして隠し、中央にスピナーを表示する。実際にクリックを止めるのは
+   JS側で一緒に設定するdisabled属性(break.js#setButtonLoading相当)。 --- */
+@keyframes break-btn-spin {
+  to { transform: rotate(360deg); }
+}
+.break-start-btn.is-loading,
+.break-end-btn.is-loading {
+  position: relative;
+  color: transparent !important;
+  cursor: not-allowed;
+}
+.break-start-btn.is-loading::after,
+.break-end-btn.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: break-btn-spin 0.6s linear infinite;
+}
+.break-end-btn.is-loading::after {
+  border-color: rgba(31, 58, 95, 0.25);
+  border-top-color: var(--kon);
+}
+
 /* --- 休憩中: 大きな残り時間表示(③④) --- */
 .break-active {
   text-align: center;

@@ -64,7 +64,7 @@ async function readErrorMessage(res, fallback) {
 
 /** baseDateを含む、現在の締め日の期間を読み込んで表示する */
 async function loadPeriod(baseDate) {
-  setStatus("読み込み中...", false);
+  setStatus("読み込み中...", false, true);
 
   try {
     const qs = `closingDay=${currentClosingDay}&baseDate=${baseDate}`;
@@ -455,7 +455,7 @@ async function savePeriod() {
     });
   });
 
-  setStatus("保存中...", false);
+  setStatus("保存中...", false, true);
   try {
     const res = await fetch(
       `/api/attendance/period?startDate=${currentStartDate}&endDate=${currentEndDate}`,
@@ -475,8 +475,9 @@ async function savePeriod() {
   }
 }
 
-function setStatus(msg, isError) {
+function setStatus(msg, isError, isLoading) {
   const el = document.getElementById("statusMsg");
   el.textContent = msg;
   el.classList.toggle("error", !!isError);
+  el.classList.toggle("is-loading", !!isLoading);
 }

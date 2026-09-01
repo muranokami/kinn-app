@@ -1,0 +1,205 @@
+/* ------------------------------------------------------------------
+   お知らせ機能専用スタイル。既存の style.css / task-extra.css は変更しない。
+   .btn* / .modal-overlay / .field / .event-form* / .table-wrap などの基本クラスは
+   それらのファイルで定義済みのものをそのまま再利用する(task-extra.cssと同じ方針)。
+   announcement.html(一般ユーザー)・admin-announcement.html(管理者)の両方で読み込む。
+------------------------------------------------------------------- */
+
+/* --- 重要度バッジ --- */
+.importance-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.importance-badge.importance-IMPORTANT { background: var(--shu); color: #fff; }
+.importance-badge.importance-NORMAL    { background: #EFE9DB; color: var(--ink-soft); }
+
+/* --- 対象範囲バッジ(全社/部署名) --- */
+.scope-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--sat, #E7EEF7);
+  color: var(--kon);
+}
+
+/* --- 一般ユーザー: お知らせ一覧 --- */
+.announcement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.announcement-empty {
+  font-size: 13px;
+  color: var(--ink-soft);
+  padding: 20px 4px;
+  text-align: center;
+}
+
+.announcement-card {
+  background: #fff;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.announcement-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+/* 重要なお知らせは既読・未読を問わず常に目立つ配色にする(要件の「上部に強調表示」を
+   並び順[サービス側でimportance→publishedAtの順にソート済み]+配色の両方で満たす) */
+.announcement-card.is-important {
+  border-color: var(--shu);
+  background: var(--shu-soft, #FBEAE8);
+}
+
+.announcement-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 未読マーク(⑤未読が視覚的に分かるようにする) */
+.announcement-unread-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--shu);
+}
+
+.announcement-title {
+  flex: 1 1 auto;
+  font-size: 14px;
+  color: var(--ink-soft);
+  font-weight: 400;
+  word-break: break-word;
+}
+/* 未読は太字で強調する(⑤既読/未読の視覚的な区別) */
+.announcement-card.is-unread .announcement-title {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.announcement-date {
+  flex: none;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.announcement-body {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--paper-line);
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.announcement-meta {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
+/* --- 管理者: 補足テキスト(schedule-extra.cssの.schedule-scope-noteと同じ見た目) --- */
+.announcement-note {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: -4px 0 14px;
+}
+
+/* --- 管理者: 本文入力欄(style.cssはinput/selectのみ定義しているため、textareaにも合わせる) --- */
+.field textarea {
+  border: 1px solid var(--paper-line);
+  border-radius: 3px;
+  padding: 7px 8px;
+  font-size: 13px;
+  background: #fff;
+  min-width: 0;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/* --- 管理者: 投稿一覧テーブル --- */
+.event-list-wrap #announcementTable td.col-title { text-align: left; word-break: break-word; }
+.event-list-wrap #announcementTable td.col-body { text-align: left; color: var(--ink-soft); max-width: 320px; }
+
+/* --- 管理者: 既読/未読人数バッジ(クリックで既読状況モーダルを開く) --- */
+.read-count-badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: none;
+  border: 1px solid var(--paper-line);
+  color: var(--kon);
+  cursor: pointer;
+}
+.read-count-badge:hover { background: var(--sat, #E7EEF7); }
+.read-count-badge.all-read { border-color: var(--kon); color: var(--kon); }
+
+/* --- 管理者: 既読状況モーダル --- */
+.read-status-box { max-width: 640px; width: 100%; }
+
+.read-status-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.read-status-header .read-status-title { font-weight: 700; word-break: break-word; }
+
+.read-status-columns {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+.read-status-col {
+  flex: 1 1 0;
+  min-width: 0;
+}
+.read-status-col h3 {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 0 6px;
+}
+.read-status-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius);
+}
+.read-status-list li {
+  padding: 7px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--paper-line);
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.read-status-list li:last-child { border-bottom: none; }
+.read-status-list li .read-at { color: var(--ink-soft); font-size: 11.5px; white-space: nowrap; }
+.read-status-list .empty-item { color: var(--ink-soft); text-align: center; }

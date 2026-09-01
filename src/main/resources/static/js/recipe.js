@@ -118,7 +118,7 @@ async function toggleDetail(id, card, btn) {
     btn.textContent = "詳細を見る";
     return;
   }
-  btn.textContent = "読み込み中...";
+  setButtonLoading(btn, true);
   try {
     const res = await fetch(`/api/recipes/${id}?employeeId=${HEALTH_EMPLOYEE_ID}`);
     if (!res.ok) throw new Error(await readRecipeErrorMessage(res, "レシピ詳細の取得に失敗しました"));
@@ -130,6 +130,8 @@ async function toggleDetail(id, card, btn) {
     console.error(e);
     btn.textContent = "詳細を見る";
     alert(e.message || "レシピ詳細の取得に失敗しました");
+  } finally {
+    setButtonLoading(btn, false);
   }
 }
 
@@ -295,6 +297,7 @@ async function submitRecipeForm(e) {
 
   statusEl.textContent = "保存中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const url = editingRecipeId
       ? `/api/recipes/${editingRecipeId}?employeeId=${HEALTH_EMPLOYEE_ID}`
@@ -312,6 +315,8 @@ async function submitRecipeForm(e) {
     console.error(e);
     statusEl.textContent = e.message || "レシピの保存に失敗しました";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 

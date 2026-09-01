@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>勤 - お知らせ管理(管理者)</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/announcement-extra.css" />
+  <link rel="stylesheet" href="css/auth-common.css" />
+</head>
+<body>
+  <header class="app-header">
+    <a href="admin-top.html" class="back-link" title="管理者メニューへ戻る">&laquo; 管理者メニュー</a>
+    <h1 class="app-title">勤</h1>
+    <p class="app-subtitle">お知らせ管理(管理者)</p>
+  </header>
+
+  <nav class="breadcrumb">
+    <a href="admin-top.html">管理者トップ</a><span class="crumb-sep">&rang;</span><span class="crumb-current">お知らせ管理</span>
+  </nav>
+
+  <main class="container">
+    <span class="admin-badge">管理者ビュー</span>
+    <p class="admin-note">
+      自分の会社宛のお知らせのみを投稿・編集・削除できます。他社の情報にはアクセスできません。
+    </p>
+    <span id="statusMsg" class="status-msg"></span>
+
+    <!-- お知らせ登録 -->
+    <section class="event-form-wrap">
+      <h2>お知らせを投稿</h2>
+      <form id="createForm" class="event-form">
+        <div class="field">
+          <label for="c_department">対象範囲</label>
+          <select id="c_department">
+            <option value="">全社</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="c_importance">重要度</label>
+          <select id="c_importance">
+            <option value="NORMAL" selected>通常</option>
+            <option value="IMPORTANT">重要</option>
+          </select>
+        </div>
+        <div class="field field-grow">
+          <label for="c_title">タイトル</label>
+          <input type="text" id="c_title" maxlength="200" required placeholder="例: 夏季休業のお知らせ" />
+        </div>
+        <div class="field field-grow">
+          <label for="c_body">本文</label>
+          <textarea id="c_body" rows="4" maxlength="4000" required placeholder="お知らせの内容を入力してください"></textarea>
+        </div>
+        <div class="field">
+          <label for="c_publishedAt">公開日時</label>
+          <input type="datetime-local" id="c_publishedAt" />
+        </div>
+        <div class="field">
+          <label for="c_expiresAt">表示終了日時</label>
+          <input type="datetime-local" id="c_expiresAt" />
+        </div>
+        <div class="field field-actions">
+          <button type="submit" class="btn btn-success">投稿</button>
+        </div>
+      </form>
+      <p class="announcement-note">
+        公開日時を未来にすると予約投稿になります(その時刻まで一般ユーザーには表示されません)。
+        未入力の場合は投稿と同時に公開されます。表示終了日時は未入力なら無期限に表示されます。
+      </p>
+    </section>
+
+    <!-- 投稿一覧(投稿管理用) -->
+    <section class="table-wrap event-list-wrap">
+      <h2 style="padding:14px 16px 0;font-size:15px;color:var(--kon);">投稿一覧</h2>
+      <table id="announcementTable">
+        <thead>
+          <tr>
+            <th>重要度</th>
+            <th>対象範囲</th>
+            <th>タイトル</th>
+            <th>本文</th>
+            <th>公開日時</th>
+            <th>表示終了日時</th>
+            <th>投稿者</th>
+            <th>既読状況</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="announcementTbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <!-- 既読状況モーダル -->
+  <div class="modal-overlay" id="readStatusModal" hidden>
+    <div class="modal-box read-status-box">
+      <h2>既読状況</h2>
+      <div id="readStatusHeader" class="read-status-header"></div>
+      <p id="readStatusMsg" class="status-msg"></p>
+      <div class="read-status-columns">
+        <div class="read-status-col">
+          <h3>既読 (<span id="readCount">0</span>人)</h3>
+          <ul id="readUserList" class="read-status-list"></ul>
+        </div>
+        <div class="read-status-col">
+          <h3>未読 (<span id="unreadCount">0</span>人)</h3>
+          <ul id="unreadUserList" class="read-status-list"></ul>
+        </div>
+      </div>
+      <div class="modal-close-row">
+        <button type="button" class="btn btn-secondary" id="readStatusCloseBtn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 編集モーダル -->
+  <div class="modal-overlay" id="editModal" hidden>
+    <div class="modal-box">
+      <h2>お知らせを編集</h2>
+      <form id="editForm">
+        <div class="event-form">
+          <div class="field">
+            <label for="e_department">対象範囲</label>
+            <select id="e_department">
+              <option value="">全社</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="e_importance">重要度</label>
+            <select id="e_importance">
+              <option value="NORMAL">通常</option>
+              <option value="IMPORTANT">重要</option>
+            </select>
+          </div>
+          <div class="field field-grow">
+            <label for="e_title">タイトル</label>
+            <input type="text" id="e_title" maxlength="200" required />
+          </div>
+          <div class="field field-grow">
+            <label for="e_body">本文</label>
+            <textarea id="e_body" rows="4" maxlength="4000" required></textarea>
+          </div>
+          <div class="field">
+            <label for="e_publishedAt">公開日時</label>
+            <input type="datetime-local" id="e_publishedAt" required />
+          </div>
+          <div class="field">
+            <label for="e_expiresAt">表示終了日時</label>
+            <input type="datetime-local" id="e_expiresAt" />
+          </div>
+        </div>
+        <div class="modal-close-row">
+          <span class="status-msg" id="editStatus"></span>
+          <button type="submit" class="btn btn-success">保存</button>
+          <button type="button" class="btn btn-danger" id="editDeleteBtn">削除</button>
+          <button type="button" class="btn btn-secondary" id="editCloseBtn">キャンセル</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 削除確認モーダル -->
+  <div class="modal-overlay" id="deleteConfirmModal" hidden>
+    <div class="modal-box">
+      <h2>このお知らせを削除しますか？</h2>
+      <p class="announcement-note" id="deleteConfirmSummary"></p>
+      <div class="modal-close-row">
+        <button type="button" class="btn btn-secondary" id="deleteConfirmCancelBtn">キャンセル</button>
+        <button type="button" class="btn btn-danger" id="deleteConfirmOkBtn">削除</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth-common.js"></script>
+  <script src="js/admin-announcement.js"></script>
+</body>
+</html>

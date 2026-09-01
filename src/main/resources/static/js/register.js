@@ -1,5 +1,11 @@
 let companyLookupLoadedFor = null;
 
+// バックエンド(RegisterRequestDto)の@Patternと必ず同じ正規表現・基準にする(片方だけ緩いと
+// 実質的にザルになるため)。ここで弾ければ通信せずに済むが、万一ズレてもバックエンド側の
+// @Patternが最終防衛line(readErrorMessageがそのエラーメッセージをそのまま画面に表示する)。
+const LOGIN_ID_PATTERN = /^[A-Za-z0-9]+$/;
+const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).+$/;
+
 // 「新しく会社を登録する」で登録が完了し、会社コード案内(#companyCodePanel)を
 // 表示している間だけtrueにする。この間にタブを閉じる・ブラウザの戻るボタンで
 // 離脱するなど、ページ遷移が起きそうになったらbeforeunloadで確認ダイアログを出し、
@@ -132,6 +138,16 @@ async function handleRegister(e) {
     statusEl.classList.add("error");
     return;
   }
+  if (loginId.length < 4 || loginId.length > 32 || !LOGIN_ID_PATTERN.test(loginId)) {
+    statusEl.textContent = "ユーザーIDは半角英数字のみで、4文字以上32文字以内で入力してください";
+    statusEl.classList.add("error");
+    return;
+  }
+  if (password.length < 8 || !PASSWORD_PATTERN.test(password)) {
+    statusEl.textContent = "パスワードは英字の大文字・小文字・数字をすべて含む8文字以上で入力してください";
+    statusEl.classList.add("error");
+    return;
+  }
   if (password !== confirmPassword) {
     statusEl.textContent = "パスワードが一致しません";
     statusEl.classList.add("error");
@@ -139,6 +155,7 @@ async function handleRegister(e) {
   }
 
   statusEl.textContent = "登録中...";
+  statusEl.classList.add("is-loading");
 
   // 送信中(サーバーの応答待ち)は送信ボタンと「ログイン画面へ戻る」リンクを
   // 操作不可にする。これが無いと、応答が返る前にリンクから離脱された場合、
@@ -147,7 +164,7 @@ async function handleRegister(e) {
   // 直後にしか一度に案内できない値のため、確実に見てもらう必要がある)。
   const submitBtn = e.target.querySelector('button[type="submit"]');
   const backLink = document.getElementById("backToLoginLink");
-  submitBtn.disabled = true;
+  setButtonLoading(submitBtn, true);
   backLink.setAttribute("aria-disabled", "true");
 
   try {
@@ -167,7 +184,8 @@ async function handleRegister(e) {
       if (!proceed) {
         statusEl.textContent = "登録を中止しました。会社名をご確認いただくか、既存の会社に参加する場合は会社コードをご利用ください。";
         statusEl.classList.add("error");
-        submitBtn.disabled = false;
+        statusEl.classList.remove("is-loading");
+        setButtonLoading(submitBtn, false);
         backLink.removeAttribute("aria-disabled");
         return;
       }
@@ -189,6 +207,7 @@ async function handleRegister(e) {
       document.getElementById("registerForm").hidden = true;
       document.getElementById("companyCodeValue").textContent = user.companyCode;
       document.getElementById("companyCodePanel").hidden = false;
+      statusEl.classList.remove("is-loading");
       // 「ログイン画面へ進む」を押すまでは、タブを閉じる・戻るボタン等での
       // 離脱にbeforeunloadで確認を挟む(上の宣言・イベントリスナー参照)
       companyCodePendingAck = true;
@@ -197,6 +216,7 @@ async function handleRegister(e) {
 
     statusEl.textContent = "登録しました。ログイン画面に移動します...";
     statusEl.classList.remove("error");
+    statusEl.classList.remove("is-loading");
     setTimeout(() => {
       window.location.href = "login.html";
     }, 800);
@@ -204,8 +224,9 @@ async function handleRegister(e) {
     console.error(err);
     statusEl.textContent = err.message || "登録に失敗しました";
     statusEl.classList.add("error");
+    statusEl.classList.remove("is-loading");
     // 失敗時は再度操作できるように戻す
-    submitBtn.disabled = false;
+    setButtonLoading(submitBtn, false);
     backLink.removeAttribute("aria-disabled");
   }
 }

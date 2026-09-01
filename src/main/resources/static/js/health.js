@@ -60,7 +60,7 @@ function shiftMonth(delta) {
 async function loadMonth() {
   currentYear = parseInt(document.getElementById("yearInput").value, 10);
   currentMonth = parseInt(document.getElementById("monthSelect").value, 10);
-  setStatus("読み込み中...", false);
+  setStatus("読み込み中...", false, true);
 
   try {
     const res = await fetch(`/api/health/${currentYear}/${currentMonth}?employeeId=${EMPLOYEE_ID}`);
@@ -198,7 +198,7 @@ async function saveMonth() {
   const payload = [];
   rows.forEach((tr) => payload.push(readRow(tr)));
 
-  setStatus("保存中...", false);
+  setStatus("保存中...", false, true);
   try {
     const res = await fetch(`/api/health/${currentYear}/${currentMonth}?employeeId=${EMPLOYEE_ID}`, {
       method: "POST",
@@ -215,8 +215,9 @@ async function saveMonth() {
   }
 }
 
-function setStatus(msg, isError) {
+function setStatus(msg, isError, isLoading) {
   const el = document.getElementById("statusMsg");
   el.textContent = msg;
   el.classList.toggle("error", !!isError);
+  el.classList.toggle("is-loading", !!isLoading);
 }

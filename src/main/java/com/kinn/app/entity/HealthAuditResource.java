@@ -15,7 +15,15 @@ public enum HealthAuditResource {
     SCORE,
     /** 健康スコア・体重・睡眠などの推移グラフ */
     TREND,
-    /** 健康アラート */
+    /**
+     * 健康アラート(廃止済み)。
+     * 健康管理機能は診断・治療の提案を行わず記録・閲覧・可視化のみに限定する方針のため、
+     * アラート機能自体(生成・表示API・health_alertテーブルへの書き込み)を撤廃した
+     * (2026-08-30、docs/health-audit-legal-checklist.md参照)。過去に生成された監査ログの
+     * resource列にはこの値の行が残っており、{@code @Enumerated(EnumType.STRING)}での
+     * デシリアライズを壊さないよう列挙型からは削除せずここに残している。新規に
+     * このリソースへの監査ログが記録されることはない。
+     */
     ALERT,
     /** 勤怠×健康分析 */
     ANALYSIS,

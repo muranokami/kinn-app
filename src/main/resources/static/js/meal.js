@@ -149,10 +149,11 @@ function applyMealToForm(type, record) {
   form.dataset.recordId = record?.id ?? "";
 }
 
-function setStatus(type, text, isError) {
+function setStatus(type, text, isError, isLoading) {
   const statusEl = mealCardEl(type).querySelector(".m-status");
   statusEl.textContent = text;
   statusEl.classList.toggle("error", !!isError);
+  statusEl.classList.toggle("is-loading", !!isLoading);
 }
 
 /** サーバーからの応答を読み、エラー時は message フィールド(あれば)をそのまま使う。
@@ -195,7 +196,7 @@ async function saveMealForm(type) {
     memo: str(".m-memo"),
   };
 
-  setStatus(type, "保存中...");
+  setStatus(type, "保存中...", false, true);
   try {
     const res = await fetch(`/api/meal?employeeId=${HEALTH_EMPLOYEE_ID}`, {
       method: "PUT",
@@ -278,6 +279,7 @@ async function addSnack(e) {
   }
   statusEl.textContent = "追加中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/meal?employeeId=${HEALTH_EMPLOYEE_ID}`, {
       method: "PUT",
@@ -293,6 +295,8 @@ async function addSnack(e) {
     console.error(e2);
     statusEl.textContent = e2.message || "追加エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -354,7 +358,7 @@ async function openRecipeModal(record, type) {
 
   if (record.recipeId) {
     const bodyEl = document.getElementById("recipeViewBody");
-    bodyEl.innerHTML = "読み込み中...";
+    bodyEl.innerHTML = '<p class="alert-empty is-loading">読み込み中...</p>';
     try {
       const res = await fetch(`/api/recipes/${record.recipeId}`);
       if (!res.ok) throw new Error(await readErrorMessage(res, "レシピの取得に失敗しました"));

@@ -110,11 +110,14 @@ public class HealthAuditSecurityEventLogger {
         return path != null && (path.startsWith("/api/health/") || path.startsWith("/api/admin/health/"));
     }
 
+    /**
+     * X-Forwarded-Forは誰でも自由に送信できるヘッダーであり、直接信用すると
+     * セキュリティイベントログのIPアドレスが攻撃者に偽装されてしまう
+     * (セキュリティレビューで指摘・修正。AuthController#clientIpと同じ理由)。
+     * getRemoteAddr()の使用理由・リバースプロキシ配下での正しい対応はHealthAuditAspect#clientIp
+     * のjavadoc参照。
+     */
     private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
         return request.getRemoteAddr();
     }
 

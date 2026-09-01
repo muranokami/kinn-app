@@ -6,7 +6,6 @@ import com.kinn.app.dto.DepartmentHealthSummaryDto;
 import com.kinn.app.dto.HealthScoreDto;
 import com.kinn.app.entity.HealthCheck;
 import com.kinn.app.entity.HealthProfile;
-import com.kinn.app.repository.HealthAlertRepository;
 import com.kinn.app.repository.HealthCheckRepository;
 import com.kinn.app.repository.HealthProfileRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,8 +18,8 @@ import java.util.*;
 /**
  * 管理者向けの健康ダッシュボード集計サービス。
  *
- * 個人の健康情報(体重・血圧・メモなど)は一切返さず、社員数・平均値・
- * アラート件数といった会社/部署単位の集計値のみを提供する。
+ * 個人の健康情報(体重・血圧・メモなど)は一切返さず、社員数・平均値
+ * といった会社/部署単位の集計値のみを提供する。
  * 部署は {@link HealthProfile#getDepartment()} を使った簡易グルーピングであり、
  * 部署マスタが整備された際の拡張を見込んだ暫定実装。
  *
@@ -36,20 +35,17 @@ public class AdminHealthService {
 
     private final HealthCheckRepository healthCheckRepository;
     private final HealthProfileRepository healthProfileRepository;
-    private final HealthAlertRepository healthAlertRepository;
     private final AttendanceService attendanceService;
     private final HealthScoreService healthScoreService;
     private final int minEmployeeCountThreshold;
 
     public AdminHealthService(HealthCheckRepository healthCheckRepository,
                                HealthProfileRepository healthProfileRepository,
-                               HealthAlertRepository healthAlertRepository,
                                AttendanceService attendanceService,
                                HealthScoreService healthScoreService,
                                @Value("${app.health.department-summary.min-employee-count:5}") int minEmployeeCountThreshold) {
         this.healthCheckRepository = healthCheckRepository;
         this.healthProfileRepository = healthProfileRepository;
-        this.healthAlertRepository = healthAlertRepository;
         this.attendanceService = attendanceService;
         this.healthScoreService = healthScoreService;
         this.minEmployeeCountThreshold = minEmployeeCountThreshold;
@@ -86,7 +82,6 @@ public class AdminHealthService {
         double sleepSum = 0; int sleepN = 0;
         double fatigueSum = 0; int fatigueN = 0;
         double overtimeSum = 0; int overtimeN = 0;
-        long alertTotal = 0;
 
         Map<String, List<EmployeeHealthAggregate>> byDepartment = new TreeMap<>();
 
@@ -95,7 +90,6 @@ public class AdminHealthService {
             if (agg.avgSleepHours != null) { sleepSum += agg.avgSleepHours; sleepN++; }
             if (agg.avgFatigueLevel != null) { fatigueSum += agg.avgFatigueLevel; fatigueN++; }
             overtimeSum += agg.overtimeHours; overtimeN++;
-            alertTotal += agg.alertCount;
 
             byDepartment.computeIfAbsent(agg.department, d -> new ArrayList<>()).add(agg);
         }
@@ -113,7 +107,6 @@ public class AdminHealthService {
                 .avgSleepHours(avgOrNull(sleepSum, sleepN))
                 .avgFatigueLevel(avgOrNull(fatigueSum, fatigueN))
                 .avgOvertimeHours(avgOrNull(overtimeSum, overtimeN))
-                .alertCount(alertTotal)
                 .departments(departments)
                 .build();
     }
@@ -121,7 +114,7 @@ public class AdminHealthService {
     private DepartmentHealthSummaryDto summarizeDepartment(String department, List<EmployeeHealthAggregate> group) {
         int employeeCount = group.size();
 
-        // 対象人数が少ない部署は、平均値・アラート件数を返すこと自体が実質的に個人の健康状態を
+        // 対象人数が少ない部署は、平均値を返すこと自体が実質的に個人の健康状態を
         // 特定させてしまうため、部署名・人数以外は意図的に返さない(insufficientData=true)。
         if (employeeCount < minEmployeeCountThreshold) {
             return DepartmentHealthSummaryDto.builder()
@@ -136,14 +129,12 @@ public class AdminHealthService {
         double sleepSum = 0; int sleepN = 0;
         double fatigueSum = 0; int fatigueN = 0;
         double overtimeSum = 0; int overtimeN = 0;
-        long alertTotal = 0;
 
         for (EmployeeHealthAggregate agg : group) {
             if (agg.avgHealthScore != null) { scoreSum += agg.avgHealthScore; scoreN++; }
             if (agg.avgSleepHours != null) { sleepSum += agg.avgSleepHours; sleepN++; }
             if (agg.avgFatigueLevel != null) { fatigueSum += agg.avgFatigueLevel; fatigueN++; }
             overtimeSum += agg.overtimeHours; overtimeN++;
-            alertTotal += agg.alertCount;
         }
 
         return DepartmentHealthSummaryDto.builder()
@@ -155,7 +146,6 @@ public class AdminHealthService {
                 .avgSleepHours(avgOrNull(sleepSum, sleepN))
                 .avgFatigueLevel(avgOrNull(fatigueSum, fatigueN))
                 .avgOvertimeHours(avgOrNull(overtimeSum, overtimeN))
-                .alertCount(alertTotal)
                 .build();
     }
 
@@ -177,15 +167,13 @@ public class AdminHealthService {
         }
 
         AttendanceRangeStatsDto attendance = attendanceService.getRangeStats(employeeId, from, to);
-        long alertCount = healthAlertRepository.countByEmployeeIdAndTriggeredDateBetween(employeeId, from, to);
 
         return new EmployeeHealthAggregate(
                 department,
                 avgOrNull(scoreSum, scoreN),
                 avgOrNull(sleepSum, sleepN),
                 avgOrNull(fatigueSum, fatigueN),
-                attendance.getOvertimeHours(),
-                alertCount);
+                attendance.getOvertimeHours());
     }
 
     private Double avgOrNull(double sum, int n) {
@@ -199,17 +187,15 @@ public class AdminHealthService {
         final Double avgSleepHours;
         final Double avgFatigueLevel;
         final double overtimeHours;
-        final long alertCount;
 
         EmployeeHealthAggregate(String department, Double avgHealthScore, Double avgSleepHours,
                                  Double avgFatigueLevel,
-                                 double overtimeHours, long alertCount) {
+                                 double overtimeHours) {
             this.department = department;
             this.avgHealthScore = avgHealthScore;
             this.avgSleepHours = avgSleepHours;
             this.avgFatigueLevel = avgFatigueLevel;
             this.overtimeHours = overtimeHours;
-            this.alertCount = alertCount;
         }
     }
 }

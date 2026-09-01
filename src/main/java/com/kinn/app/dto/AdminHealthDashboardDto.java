@@ -25,6 +25,5 @@ public class AdminHealthDashboardDto {
     private Double avgSleepHours;
     private Double avgFatigueLevel;
     private Double avgOvertimeHours;
-    private long alertCount;
     private List<DepartmentHealthSummaryDto> departments;
 }

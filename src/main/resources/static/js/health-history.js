@@ -23,7 +23,7 @@ function updateActiveTab() {
 
 async function loadHistory() {
   const tbody = document.getElementById("historyTbody");
-  tbody.innerHTML = `<tr class="empty-row"><td colspan="7">読み込み中...</td></tr>`;
+  tbody.innerHTML = buildSkeletonRows(7);
   try {
     const res = await fetch(`/api/health/score/trend?employeeId=${HEALTH_EMPLOYEE_ID}&period=${historyPeriod}`);
     if (!res.ok) throw new Error("読み込みに失敗しました");

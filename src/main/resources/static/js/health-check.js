@@ -55,7 +55,7 @@ function buildScale(containerId, onSelect) {
 }
 
 async function loadToday() {
-  setStatus("読み込み中...", false);
+  setStatus("読み込み中...", false, true);
   try {
     const res = await fetch(`/api/health/check?employeeId=${HEALTH_EMPLOYEE_ID}&date=${healthTodayStr()}`);
     if (!res.ok) throw new Error("読み込みに失敗しました");
@@ -106,7 +106,7 @@ async function saveCheck() {
     memo: document.getElementById("memo").value,
   };
 
-  setStatus("保存中...", false);
+  setStatus("保存中...", false, true);
   try {
     const res = await fetch(`/api/health/check?employeeId=${HEALTH_EMPLOYEE_ID}`, {
       method: "PUT",
@@ -171,8 +171,9 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
-function setStatus(msg, isError) {
+function setStatus(msg, isError, isLoading) {
   const el = document.getElementById("statusMsg");
   el.textContent = msg;
   el.classList.toggle("error", !!isError);
+  el.classList.toggle("is-loading", !!isLoading);
 }

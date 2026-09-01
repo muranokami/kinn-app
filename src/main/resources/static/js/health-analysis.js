@@ -23,7 +23,7 @@ function updateActiveTab() {
 
 async function loadAnalysis() {
   const tbody = document.getElementById("analysisTbody");
-  tbody.innerHTML = `<tr class="empty-row"><td colspan="6">読み込み中...</td></tr>`;
+  tbody.innerHTML = buildSkeletonRows(6);
   try {
     const res = await fetch(`/api/health/analysis?employeeId=${HEALTH_EMPLOYEE_ID}&period=${analysisPeriod}`);
     if (!res.ok) throw new Error("読み込みに失敗しました");

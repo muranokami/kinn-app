@@ -99,23 +99,7 @@
 }
 .scale-btn.active { background: var(--shu); border-color: var(--shu-deep); color: #fff; }
 
-/* --- アラート --- */
-.alert-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-.alert-item {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 14px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--paper-line);
-  background: var(--gold-soft);
-}
-.alert-item.severity-WARNING { background: var(--shu-soft); border-color: #EFC7C1; }
-.alert-item .alert-icon { font-size: 20px; }
-.alert-item .alert-body { flex: 1; }
-.alert-item .alert-type { font-size: 12px; font-weight: 700; color: var(--shu-deep); letter-spacing: 0.04em; }
-.alert-item .alert-message { margin: 3px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink); }
-.alert-item .alert-date { font-size: 11px; color: var(--ink-soft); margin-top: 4px; }
+/* --- 空状態メッセージ(健康スコア・食事記録など複数画面で共用) --- */
 .alert-empty { font-size: 13px; color: var(--ink-soft); padding: 14px 4px; }
 
 /* --- 期間タブ --- */

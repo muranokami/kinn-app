@@ -28,10 +28,11 @@ function readErrorMessage(res, fallback) {
   return res.json().then((body) => body?.message || fallback).catch(() => fallback);
 }
 
-function setStatus(text, isError) {
+function setStatus(text, isError, isLoading) {
   const el = document.getElementById("statusMsg");
   el.textContent = text || "";
   el.classList.toggle("error", !!isError);
+  el.classList.toggle("is-loading", !!isLoading);
 }
 
 window.addEventListener("DOMContentLoaded", async () => {

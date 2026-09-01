@@ -36,9 +36,10 @@ async function loadAiSuggestion() {
 async function regenerateAiSuggestion() {
   const btn = document.getElementById("aiMealRegenerateBtn");
   const statusEl = document.getElementById("aiMealStatus");
-  btn.disabled = true;
+  setButtonLoading(btn, true);
   statusEl.textContent = "別の献立を考えています...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(
       `/api/meal/ai-suggestion/regenerate?employeeId=${HEALTH_EMPLOYEE_ID}&date=${healthTodayStr()}`,
@@ -53,7 +54,8 @@ async function regenerateAiSuggestion() {
     statusEl.textContent = e.message || "献立の再提案に失敗しました。もう一度お試しください。";
     statusEl.classList.add("error");
   } finally {
-    btn.disabled = false;
+    setButtonLoading(btn, false);
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -72,7 +74,7 @@ async function saveAiSuggestion() {
   if (!currentAiSuggestion || !currentAiSuggestion.id) return;
   const btn = document.getElementById("aiMealSaveBtn");
   const statusEl = document.getElementById("aiMealStatus");
-  btn.disabled = true;
+  setButtonLoading(btn, true);
   try {
     const res = await fetch(
       `/api/meal/ai-suggestion/${currentAiSuggestion.id}/save?employeeId=${HEALTH_EMPLOYEE_ID}`,
@@ -88,16 +90,17 @@ async function saveAiSuggestion() {
     statusEl.textContent = e.message || "保存エラー";
     statusEl.classList.add("error");
   } finally {
-    btn.disabled = false;
+    setButtonLoading(btn, false);
   }
 }
 
 async function registerAiMeal(mealType, btn) {
   if (!currentAiSuggestion || !currentAiSuggestion.id) return;
   const statusEl = btn.parentElement.querySelector(".ai-meal-register-status");
-  btn.disabled = true;
+  setButtonLoading(btn, true);
   statusEl.textContent = "登録中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(
       `/api/meal/ai-suggestion/${currentAiSuggestion.id}/register?employeeId=${HEALTH_EMPLOYEE_ID}&mealType=${mealType}`,
@@ -105,14 +108,18 @@ async function registerAiMeal(mealType, btn) {
     );
     if (!res.ok) throw new Error(await readAiErrorMessage(res, "食事記録への登録に失敗しました"));
     statusEl.textContent = "食事記録に登録しました";
+    statusEl.classList.remove("is-loading");
+    // 登録済みのため再登録させない(is-loadingは解除しつつ、disabledのまま維持する)
+    btn.classList.remove("is-loading");
     btn.closest(".ai-meal-card").classList.add("is-registered");
     // 上部の「食べたもの」入力フォームと今日のサマリーにも反映する(meal.js)
     if (typeof loadDay === "function") loadDay();
   } catch (e) {
     console.error(e);
     statusEl.textContent = e.message || "登録エラー";
+    statusEl.classList.remove("is-loading");
     statusEl.classList.add("error");
-    btn.disabled = false;
+    setButtonLoading(btn, false);
   }
 }
 
@@ -209,6 +216,7 @@ async function loadFoodPreference() {
 }
 
 async function saveFoodPreference() {
+  const btn = document.getElementById("prefSaveBtn");
   const statusEl = document.getElementById("prefStatus");
   const str = (id) => {
     const v = document.getElementById(id).value.trim();
@@ -229,8 +237,10 @@ async function saveFoodPreference() {
     cookingLevel: str("prefCookingLevel"),
   };
 
+  setButtonLoading(btn, true);
   statusEl.textContent = "保存中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/meal/preference?employeeId=${HEALTH_EMPLOYEE_ID}`, {
       method: "PUT",
@@ -243,6 +253,9 @@ async function saveFoodPreference() {
     console.error(e);
     statusEl.textContent = e.message || "保存エラー";
     statusEl.classList.add("error");
+  } finally {
+    setButtonLoading(btn, false);
+    statusEl.classList.remove("is-loading");
   }
 }
 

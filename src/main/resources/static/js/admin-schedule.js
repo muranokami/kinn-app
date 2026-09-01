@@ -148,6 +148,7 @@ async function loadMonth() {
   const statusEl = document.getElementById("statusMsg");
   statusEl.textContent = "読み込み中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
 
   try {
     const qs = currentDepartmentId ? `?departmentId=${currentDepartmentId}` : "";
@@ -166,6 +167,8 @@ async function loadMonth() {
     console.error(e);
     statusEl.textContent = e.message || "読み込みエラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -276,6 +279,7 @@ async function onCreateSubmit(e) {
 
   statusEl.textContent = "登録中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const url = employeeValue === "ALL"
       ? `/api/admin/schedule/departments/${departmentId}`
@@ -300,6 +304,8 @@ async function onCreateSubmit(e) {
     console.error(err);
     statusEl.textContent = err.message || "登録エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -358,6 +364,7 @@ async function onEditSubmit(e) {
 
   statusEl.textContent = "保存中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/schedule/employees/${editingEvent.userId}/${editingEvent.id}`, {
       method: "PUT",
@@ -372,6 +379,8 @@ async function onEditSubmit(e) {
     console.error(err);
     statusEl.textContent = err.message || "保存エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -382,6 +391,7 @@ async function onEditDelete() {
 
   statusEl.textContent = "削除中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/schedule/employees/${editingEvent.userId}/${editingEvent.id}`, {
       method: "DELETE",
@@ -393,6 +403,8 @@ async function onEditDelete() {
     console.error(err);
     statusEl.textContent = err.message || "削除エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -519,6 +531,7 @@ async function onSharedCreateSubmit(e) {
 
   statusEl.textContent = "部署共有スケジュールを登録中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/schedule/departments/${departmentId}/shared`, {
       method: "POST",
@@ -542,6 +555,8 @@ async function onSharedCreateSubmit(e) {
     console.error(err);
     statusEl.textContent = err.message || "登録エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -591,6 +606,7 @@ async function onSharedEditSubmit(e) {
 
   statusEl.textContent = "保存中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     // 「全部署」表示中はcurrentDepartmentIdが空なので、必ず編集対象の行自身が持つ
     // departmentId を使う(どちらの表示モードでも常に正しい部署を指すため)
@@ -608,6 +624,8 @@ async function onSharedEditSubmit(e) {
     console.error(err);
     statusEl.textContent = err.message || "保存エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -619,6 +637,7 @@ async function onSharedEditDelete() {
 
   statusEl.textContent = "削除中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/schedule/departments/${editingSharedEvent.departmentId}/shared/${editingSharedEvent.id}`, {
       method: "DELETE",
@@ -631,5 +650,7 @@ async function onSharedEditDelete() {
     console.error(err);
     statusEl.textContent = err.message || "削除エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }

@@ -28,6 +28,7 @@ async function handleLogin(e) {
   }
 
   statusEl.textContent = "ログイン中...";
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch("/api/auth/login", {
       method: "POST",
@@ -43,5 +44,7 @@ async function handleLogin(e) {
     console.error(err);
     statusEl.textContent = err.message || "ログインに失敗しました";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }

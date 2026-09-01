@@ -187,7 +187,7 @@ function setMode(mode) {
 async function loadMonth() {
   currentYear = parseInt(document.getElementById("yearInput").value, 10);
   currentMonth = parseInt(document.getElementById("monthSelect").value, 10);
-  setStatus("読み込み中...", false);
+  setStatus("読み込み中...", false, true);
 
   try {
     if (currentMode === "personal") {
@@ -745,7 +745,7 @@ async function onSubmit(e) {
     return;
   }
 
-  setStatus(editingId ? "更新中..." : "追加中...", false);
+  setStatus(editingId ? "更新中..." : "追加中...", false, true);
   try {
     const apiBase = type === "DEPARTMENT" ? "/api/schedule/department" : "/api/schedule";
     const url = editingId ? `${apiBase}/${editingId}` : apiBase;
@@ -783,7 +783,7 @@ function toTimeOrNull(hhmm) {
 async function deleteEvent(ev) {
   const id = ev.id;
   const type = ev.scheduleType || "PERSONAL";
-  setStatus("削除中...", false);
+  setStatus("削除中...", false, true);
   try {
     const url = type === "DEPARTMENT" ? `/api/schedule/department/${id}` : `/api/schedule/${id}`;
     const res = await fetch(url, { method: "DELETE" });
@@ -797,8 +797,9 @@ async function deleteEvent(ev) {
   }
 }
 
-function setStatus(msg, isError) {
+function setStatus(msg, isError, isLoading) {
   const el = document.getElementById("statusMsg");
   el.textContent = msg;
   el.classList.toggle("error", !!isError);
+  el.classList.toggle("is-loading", !!isLoading);
 }

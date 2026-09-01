@@ -1,5 +1,9 @@
 package com.kinn.app.entity;
 
+import com.kinn.app.security.crypto.EncryptedConditionConverter;
+import com.kinn.app.security.crypto.EncryptedDoubleConverter;
+import com.kinn.app.security.crypto.EncryptedIntegerConverter;
+import com.kinn.app.security.crypto.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,6 +13,10 @@ import java.time.LocalDate;
  * 1日分の健康記録。
  * 月次集計(平均体重・平均睡眠時間など)はここでは持たず、HealthService 側で
  * 都度計算する(集計ロジックを1箇所にまとめるため)。
+ *
+ * 体重・睡眠時間・歩数・運動時間・血圧・体調・メモは要配慮個人情報のため、{@code @Convert}で
+ * DB保存前にAES-256-GCM暗号化する(HealthDataEncryptor参照。セキュリティレビュー③対応。
+ * V5マイグレーションで列をtextへ変更済み)。
  */
 @Entity
 @Table(
@@ -35,33 +43,41 @@ public class HealthRecord {
     private LocalDate recordDate;
 
     /** 体重(kg) */
-    @Column(name = "weight_kg")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "weight_kg", columnDefinition = "text")
     private Double weightKg;
 
     /** 睡眠時間(時間) */
-    @Column(name = "sleep_hours")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "sleep_hours", columnDefinition = "text")
     private Double sleepHours;
 
     /** 歩数 */
-    @Column(name = "steps")
+    @Convert(converter = EncryptedIntegerConverter.class)
+    @Column(name = "steps", columnDefinition = "text")
     private Integer steps;
 
     /** 運動時間(分) */
-    @Column(name = "exercise_minutes")
+    @Convert(converter = EncryptedIntegerConverter.class)
+    @Column(name = "exercise_minutes", columnDefinition = "text")
     private Integer exerciseMinutes;
 
     /** 収縮期血圧(上) */
-    @Column(name = "systolic_bp")
+    @Convert(converter = EncryptedIntegerConverter.class)
+    @Column(name = "systolic_bp", columnDefinition = "text")
     private Integer systolicBp;
 
     /** 拡張期血圧(下) */
-    @Column(name = "diastolic_bp")
+    @Convert(converter = EncryptedIntegerConverter.class)
+    @Column(name = "diastolic_bp", columnDefinition = "text")
     private Integer diastolicBp;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "condition", length = 32)
+    // @Enumeratedとは併用できないため、Enum名そのものを暗号化するConverterに置き換えている
+    @Convert(converter = EncryptedConditionConverter.class)
+    @Column(name = "condition", columnDefinition = "text")
     private Condition condition;
 
-    @Column(name = "memo", length = 255)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "memo", columnDefinition = "text")
     private String memo;
 }

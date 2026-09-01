@@ -92,6 +92,7 @@ async function loadFlatList(baseDate) {
   const statusEl = document.getElementById("statusMsg");
   statusEl.textContent = "読み込み中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
 
   try {
     const qs = new URLSearchParams({ closingDay: flatClosingDay, baseDate });
@@ -109,6 +110,8 @@ async function loadFlatList(baseDate) {
     console.error(e);
     statusEl.textContent = e.message || "読み込みエラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -239,6 +242,7 @@ async function loadEmployeePeriod(baseDate) {
   const statusEl = document.getElementById("employeeCalStatus");
   statusEl.textContent = "読み込み中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
 
   try {
     const qs = new URLSearchParams({ closingDay: empClosingDay, baseDate });
@@ -257,6 +261,8 @@ async function loadEmployeePeriod(baseDate) {
     console.error(e);
     statusEl.textContent = e.message || "読み込みエラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 
@@ -364,6 +370,7 @@ async function handleEditSubmit(e) {
 
   statusEl.textContent = "保存中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch(`/api/admin/attendance/employees/${empUserId}/${editingDate}`, {
       method: "PUT",
@@ -379,6 +386,8 @@ async function handleEditSubmit(e) {
     console.error(e2);
     statusEl.textContent = e2.message || "保存エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 

@@ -6,6 +6,7 @@ import com.kinn.app.dto.AdminHealthDashboardDto;
 import com.kinn.app.entity.HealthAuditAction;
 import com.kinn.app.entity.HealthAuditResource;
 import com.kinn.app.service.AdminHealthService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +14,11 @@ import org.springframework.web.bind.annotation.*;
  * 管理者向け健康ダッシュボードAPI。会社・部署単位の集計のみを返し、
  * 個人が特定できる健康情報は返さない。ログイン中の管理者と同じ会社の社員のみを対象とする
  * (他社のデータは決して含めない)。
+ * クラスレベルの@PreAuthorizeも多層防御として付与している(SecurityConfigのjavadoc参照)。
  */
 @RestController
 @RequestMapping("/api/admin/health")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminHealthController {
 
     private final AdminHealthService adminHealthService;

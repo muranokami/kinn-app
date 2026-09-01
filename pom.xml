@@ -124,6 +124,13 @@
                     <excludes>
                         <exclude>**/._*</exclude>
                     </excludes>
+                    <!-- 実行環境のJDKバージョンがMockito同梱のByteByddyが公式サポートする
+                         バージョンより新しい場合(2026-08時点でJava 24等)、具象クラス
+                         (インターフェースではなくAttendanceService等)のモック化に失敗することが
+                         ある。JVM起動時点でこのシステムプロパティを設定しておく必要がある
+                         (テストクラス内でSystem.setPropertyしても、他のテストクラスが先に
+                         ByteBuddyの互換性判定を行っていた場合は手遅れになるため)。 -->
+                    <argLine>-Dnet.bytebuddy.experimental=true</argLine>
                 </configuration>
             </plugin>
         </plugins>

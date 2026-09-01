@@ -47,6 +47,7 @@ async function handleCreate(e) {
 
   statusEl.textContent = "登録中...";
   statusEl.classList.remove("error");
+  statusEl.classList.add("is-loading");
   try {
     const res = await fetch("/api/admin/departments", {
       method: "POST",
@@ -61,6 +62,8 @@ async function handleCreate(e) {
     console.error(e2);
     statusEl.textContent = e2.message || "登録エラー";
     statusEl.classList.add("error");
+  } finally {
+    statusEl.classList.remove("is-loading");
   }
 }
 

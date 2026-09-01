@@ -44,7 +44,7 @@ function periodRange(period) {
 
 async function loadHistory() {
   const listEl = document.getElementById("dayList");
-  listEl.innerHTML = `<p class="alert-empty">読み込み中...</p>`;
+  listEl.innerHTML = buildSkeletonBlock();
   const { from, to } = periodRange(historyPeriod);
   try {
     const res = await fetch(

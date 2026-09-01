@@ -264,17 +264,77 @@ http://localhost:8080
   `.gitignore` で除外し、実データ・実ログをリポジトリに含めないようにして
   います。
 
+### 健康管理データの保存時暗号化
+
+- 身長・体重・血圧・体温・睡眠時間・疲労度・運動時間・歩数・喫煙/飲酒状況・
+  体調・メモ(`health_profile` / `health_record` / `health_check`)は要配慮
+  個人情報にあたるため、DBへ保存する前にアプリ層でAES-256-GCM暗号化して
+  います(`HealthDataEncryptor` / JPA `AttributeConverter`。V5マイグレーション
+  で対象列を`text`型へ変更済み)。
+- 健康アラートの種別・深刻度・メッセージ(`health_alert`)、食の好み・アレルギー・
+  食事制限(`user_food_preference`の`favorite_foods`/`disliked_foods`/`allergies`/
+  `dietary_restrictions`)も同様に暗号化しています(V6マイグレーション)。
+  `health_alert.alert_type`はDB側の完全一致検索(重複登録防止)に使われていたため、
+  暗号化に伴いこの検索はアプリ層(復号後のJava比較)に変更し、DBのユニーク制約も
+  撤廃しました(詳細は`HealthAlert`エンティティのjavadoc参照)。
+- 暗号化鍵は環境変数 `APP_HEALTH_ENCRYPTION_KEY`(Base64エンコードされた
+  32バイト。`openssl rand -base64 32` で生成)に設定してください。
+  **未設定の場合はローカル開発専用の固定キーにフォールバックし、起動のたびに
+  警告ログを出します。本番・共有環境では必ず設定してください**
+  (設定し忘れると、このリポジトリを閲覧できる誰もが健康データを復号できて
+  しまいます)。
+- 鍵をローテーションする場合、既に暗号化済みのデータは旧鍵でしか復号できない
+  ため、単純に環境変数を差し替えるだけでは復号できなくなります(再暗号化の
+  仕組みは未実装)。ローテーションが必要になった場合は別途対応を検討して
+  ください。
+
 ### 既知の制約
 
-- 現状はアプリケーションサーバー自体はHTTPで動作します(HTTPS終端は
-  リバースプロキシ等での対応を想定)。本番投入時は、HTTPS配信・
-  `prod` プロファイルの有効化・DB接続情報等の環境変数の上書きをあわせて
-  行ってください。
+- 現状はアプリケーションサーバー自体はHTTPで動作します。Cookieのsecure属性・HSTS
+  ヘッダーはHTTPS接続を前提に設定済みですが、「HTTPで届いたリクエストをHTTPSへ
+  リダイレクトする」処理自体はアプリ内に実装していません。本番投入時は、
+  下記「本番HTTPS配信チェックリスト」・`prod`プロファイルの有効化・DB接続情報等の
+  環境変数の上書きをあわせて行ってください。
 - 依存ライブラリ(Maven)に既知の脆弱性が見つかった場合、GitHub Dependabot
   (`.github/dependabot.yml`)が自動的に更新用のPull Requestを作成します
   (週次チェック。GitHub Actionsのワークフローを追加した場合は月次チェックも
   自動的に有効になります)。実際にPRが作られるタイミングはGitHub側のスケジュール
   によるため、リポジトリ側の設定だけでは即時には反映されません。
+
+### 本番HTTPS配信チェックリスト(デプロイ構成確定後に対応)
+
+本番のデプロイ構成(リバースプロキシを使うか、アプリ自身がTLSを終端するか)は
+未確定のため、ここでは両パターンのチェックリストを記載する。**構成が決まらないうちに
+HTTPS強制設定だけを先取りして有効化すると、構成によっては無限リダイレクトでサイトに
+アクセスできなくなる、または後述のヘッダー偽装を許してしまうため、構成確定後に
+該当する方を適用すること。**
+
+#### A. リバースプロキシ(nginx / ALB / Cloudflare等)でTLS終端し、アプリへはHTTPで中継する場合
+
+- [ ] プロキシ側でHTTP→HTTPSリダイレクトを行う(推奨。アプリまでリクエストを到達させず
+      プロキシだけで完結させたほうが安全かつ低コスト)。
+- [ ] プロキシがアプリへ `X-Forwarded-Proto` / `X-Forwarded-For` / `X-Forwarded-Host`
+      を転送するよう設定する。
+- [ ] アプリ側で `server.forward-headers-strategy=framework` を設定し、上記ヘッダーを
+      信頼して `request.isSecure()` 等を正しく判定できるようにする
+      (これが無いと、secure Cookie判定やリダイレクト先URLの組み立てが実際の
+      接続方式と食い違う)。
+- [ ] **上記を設定する場合、アプリがプロキシを経由せず直接インターネットから到達できる
+      経路が残っていないことを必ず確認する。** `X-Forwarded-Proto` はクライアントが
+      任意の値を送れる普通のHTTPヘッダーのため、信頼できるプロキシ以外からの直接
+      アクセスを許したまま `forward-headers-strategy=framework` を有効にすると、
+      `X-Forwarded-Proto: https` を偽装した平文HTTPリクエストが「HTTPS経由」として
+      扱われてしまう(secure Cookieの保護・HTTPS強制チェックの回避に繋がる)。
+      Tomcatの `server.tomcat.remoteip.internal-proxies` 等で信頼するプロキシの
+      IPアドレスを明示的に制限することを推奨する。
+
+#### B. アプリ自身(Tomcat)でTLSを終端する場合(リバースプロキシを使わない)
+
+- [ ] `server.ssl.*`(証明書・秘密鍵等)を設定し、TLSをTomcatで直接有効化する。
+- [ ] `SecurityConfig` の `securityFilterChain` に
+      `http.requiresChannel(channel -> channel.anyRequest().requiresSecure())` を
+      追加し、HTTPでの到達をHTTPSへ強制リダイレクトする(この構成ではプロキシによる
+      ヘッダー偽装の懸念が無いため、安全に有効化できる)。
 
 ## Python分析スクリプト
 

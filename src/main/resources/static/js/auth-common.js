@@ -7,6 +7,47 @@
 // 3. セッション切れ等で401が返ってきたら、ログイン画面へ自動的に戻す。
 // ------------------------------------------------------------------
 
+/**
+ * ボタンの「送信中」表示を統一するヘルパー(項目2)。
+ * 見た目(文字を隠してスピナーを表示・not-allowedカーソル)はstyle.css/break.cssの
+ * .is-loadingクラス側で一元管理しているため、呼び出し側はこの関数でクラスの
+ * 付け外しとdisabled属性の切り替えだけを行う(is-loadingクラスだけではCSSの
+ * pointer-events:noneが多くのブラウザ操作を止めるが、フォーム送信やEnterキー等
+ * まで確実に防ぐにはdisabled属性自体も必要なため、必ずセットで切り替える)。
+ * ほぼ全ページで読み込まれるこのファイルに置くことで、どの画面からも呼べるようにする。
+ * @param {HTMLButtonElement|null} btn 対象のボタン要素(nullなら何もしない)
+ * @param {boolean} isLoading trueで読み込み中表示、falseで解除
+ */
+function setButtonLoading(btn, isLoading) {
+  if (!btn) return;
+  btn.classList.toggle("is-loading", !!isLoading);
+  btn.disabled = !!isLoading;
+}
+
+/**
+ * 一覧データの初回読み込み中(まだ何も表示されていない状態)に表示する、
+ * 薄いグレーのプレースホルダー矩形(style.cssの.skeleton-line)を並べた
+ * <tr>のHTMLを組み立てる。「読み込み中...」の文字だけより状態が伝わりやすいための
+ * 簡易スケルトン表示(項目2の余力対応分)。
+ * @param {number} colCount テーブルの列数(そのままcolspanとしても使う)
+ * @param {number} [rowCount=3] 表示する行数
+ */
+function buildSkeletonRows(colCount, rowCount = 3) {
+  const cell = '<td><div class="skeleton-line"></div></td>';
+  const row = `<tr class="empty-row skeleton-row">${cell.repeat(colCount)}</tr>`;
+  return row.repeat(rowCount);
+}
+
+/**
+ * buildSkeletonRows()のカード/リスト版。テーブルではなく<p>や<div>を並べる一覧
+ * (meal-ai-history.js、meal-history.js等)で使う。
+ * @param {number} [lineCount=3] 表示する行数
+ */
+function buildSkeletonBlock(lineCount = 3) {
+  const line = '<div class="skeleton-line"></div>';
+  return `<div class="alert-empty skeleton-row">${line.repeat(lineCount)}</div>`;
+}
+
 (function () {
   const LOGIN_PAGE = "/login.html";
   const AUTH_PAGES = ["/login.html", "/register.html", "/forgot-password.html", "/reset-password.html"];

@@ -7,6 +7,7 @@ import com.kinn.app.entity.HealthAuditAction;
 import com.kinn.app.entity.HealthAuditResource;
 import com.kinn.app.security.AppUserPrincipal;
 import com.kinn.app.service.HealthAuditLogService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,9 +20,11 @@ import java.time.LocalDate;
  * 管理者向け:健康管理監査ログの検索API。
  * 期間・対象ユーザー(loginId)・操作種別で絞り込み、自社の従業員分のみを返す
  * (/api/admin/** はSecurityConfigでhasRole("ADMIN")により保護済み)。
+ * クラスレベルの@PreAuthorizeも多層防御として付与している(SecurityConfigのjavadoc参照)。
  */
 @RestController
 @RequestMapping("/api/admin/health/audit-log")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminHealthAuditLogController {
 
     private final HealthAuditLogService healthAuditLogService;
