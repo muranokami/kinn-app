@@ -1,0 +1,18 @@
+# ビルド成果物・IDE設定・ログ等、イメージに含める必要が無いものを除外する
+# (.gitignoreと同じ方針。ビルドコンテキストの転送も速くなる)
+target/
+*.class
+.idea/
+*.iml
+.vscode/
+.git/
+.gitignore
+.DS_Store
+._*
+logs/
+*.log
+.env
+application-local.properties
+python/
+docs/
+README.md

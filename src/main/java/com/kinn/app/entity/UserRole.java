@@ -1,7 +1,7 @@
 package com.kinn.app.entity;
 
 /**
- * アプリ内権限。既存の管理者画面(admin-health.html / admin-attendance.html / admin-employees.html等)を
+ * アプリ内権限。既存の管理者画面(admin-attendance.html / admin-employees.html等)を
  * 保護するために使う。
  *
  * 将来 ROLE_SUPER_ADMIN(会社をまたいだ全社管理者)などを追加する場合は、ここに列挙値を

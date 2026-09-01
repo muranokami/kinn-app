@@ -1,0 +1,22 @@
+-- ==============================================================
+-- V7: 健康アラート機能の撤廃に伴うデータクリーンアップ
+--
+-- 健康管理機能は診断・治療の提案を行わず、健康情報の記録・閲覧・可視化に限定する方針とした
+-- ため、自動生成された健康アラート機能(閾値判定による注意喚起)自体をアプリから完全に
+-- 削除した(HealthAlert関連のentity/repository/service/controller、および
+-- index.html/health-score.html/admin-health.htmlのアラート表示箇所。
+-- docs/health-audit-legal-checklist.md参照)。
+--
+-- V2__remove_stress_related_health_data.sqlと同じ方針(既存データ保護のためテーブル・列自体は
+-- 残すが、機能撤廃に伴い不要になった値は明示的にクリアする)を踏襲し、health_alertテーブルは
+-- ここではDROPせず、既存の全アラート行のみ削除する。
+--
+-- alert_type/severity/messageはV6マイグレーションで暗号化済みのため、DBのCHECK制約に
+-- 頼った絞り込みはできないが、全行削除であればその制約は関係ない。
+--
+-- health_audit_log.resource = 'ALERT' の過去の監査ログ行はそのまま残す(監査ログはアプリの
+-- 操作記録であり、アプリ側の HealthAuditResource.ALERT も既存行のデシリアライズを壊さない
+-- ためあえて列挙型に残している。新規にこのリソースへの監査ログが記録されることはない)。
+-- ==============================================================
+
+DELETE FROM health_alert;

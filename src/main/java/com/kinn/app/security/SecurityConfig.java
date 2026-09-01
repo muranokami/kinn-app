@@ -244,7 +244,7 @@ public class SecurityConfig {
                     .permitAll()
                     // 管理者専用画面・API(既存の管理者機能を保護)。
                     .requestMatchers(
-                            "/admin-top.html", "/admin-health.html", "/admin-attendance.html",
+                            "/admin-top.html", "/admin-attendance.html",
                             "/admin-dashboard.html", "/admin-employees.html", "/admin-departments.html",
                             "/admin-schedule.html", "/admin-task.html", "/admin-health-audit-log.html",
                             "/admin-announcement.html", "/admin-overtime.html",

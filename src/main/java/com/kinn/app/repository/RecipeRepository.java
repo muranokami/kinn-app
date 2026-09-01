@@ -12,10 +12,4 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     /** 常にこのメソッドを経由して取得することで、他ユーザーのレシピに到達できないようにする */
     Optional<Recipe> findByIdAndEmployeeId(Long id, String employeeId);
-
-    /**
-     * 料理名からの検索(⑨同じ料理について不要な重複レシピを作らないための照合)。
-     * 大文字小文字を区別しない完全一致。同名が複数ある場合はid降順で最新のものを返す。
-     */
-    Optional<Recipe> findFirstByEmployeeIdAndNameIgnoreCaseOrderByIdDesc(String employeeId, String name);
 }

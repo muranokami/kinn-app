@@ -1,5 +1,8 @@
 package com.kinn.app.entity;
 
+import com.kinn.app.security.crypto.EncryptedDoubleConverter;
+import com.kinn.app.security.crypto.EncryptedIntegerConverter;
+import com.kinn.app.security.crypto.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,6 +18,16 @@ import java.time.LocalDateTime;
  * {@link com.kinn.app.service.RecipeService#generateForDish}で連携する(Phase 5)。
  *
  * 作り置き拡張を見込み、保存方法・保存期間・再加熱方法もあらかじめ持たせている(すべて任意)。
+ *
+ * 料理名・調理器具・メモ・栄養素・再加熱方法は食生活や健康状態を推測しうる情報のため、
+ * MealRecordと同様に{@code @Convert}でDB保存前にAES-256-GCM暗号化する
+ * (HealthDataEncryptor参照。V9マイグレーションで対象列をtextへ変更)。nameを暗号化した
+ * ことで、DB側での完全一致検索(重複レシピ防止。{@link com.kinn.app.repository.RecipeRepository}
+ * 参照)ができなくなったため、RecipeServiceで復号後のJava文字列比較に変更した
+ * (HealthAlertServiceの重複判定と同じ方針)。cookingMethod(区分。低感度かつ将来的な絞り込み
+ * クエリでの利用を見込む)・prepMinutes/cookMinutes/difficulty(数値メタ情報。
+ * UserFoodPreferenceのbudgetYen等と同様の位置づけ)・storage系(作り置き設定)は
+ * 暗号化しない。
  */
 @Entity
 @Table(name = "recipe")
@@ -34,7 +47,8 @@ public class Recipe {
     @Builder.Default
     private String employeeId = "default";
 
-    @Column(name = "name", nullable = false, length = 200)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "name", nullable = false, columnDefinition = "text")
     private String name;
 
     @Enumerated(EnumType.STRING)
@@ -54,34 +68,41 @@ public class Recipe {
     private Integer difficulty;
 
     /** 使用する調理器具(自由記述、カンマ区切り。例: "フライパン, 鍋") */
-    @Column(name = "equipment", length = 200)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "equipment", columnDefinition = "text")
     private String equipment;
 
     /** メモ(任意) */
-    @Column(name = "memo", length = 500)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "memo", columnDefinition = "text")
     private String memo;
 
     // ---- 栄養情報(⑰健康管理との連携。1人前・1食分の目安。すべて任意) ----
     // MealRecordの栄養素カラムと同じ命名・粒度にしている(将来「今日の献立の栄養バランス」
     // 機能を作る際に、meal_record/recipeどちらの栄養値も同じ形で扱えるようにするため)。
 
-    @Column(name = "calories")
+    @Convert(converter = EncryptedIntegerConverter.class)
+    @Column(name = "calories", columnDefinition = "text")
     private Integer calories;
 
     /** たんぱく質(g) */
-    @Column(name = "protein_g")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "protein_g", columnDefinition = "text")
     private Double proteinG;
 
     /** 脂質(g) */
-    @Column(name = "fat_g")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "fat_g", columnDefinition = "text")
     private Double fatG;
 
     /** 炭水化物(g) */
-    @Column(name = "carbs_g")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "carbs_g", columnDefinition = "text")
     private Double carbsG;
 
     /** 食塩相当量(g) */
-    @Column(name = "salt_g")
+    @Convert(converter = EncryptedDoubleConverter.class)
+    @Column(name = "salt_g", columnDefinition = "text")
     private Double saltG;
 
     // ---- 作り置き拡張用(将来利用。現時点では画面から未入力でもよい) ----
@@ -97,7 +118,8 @@ public class Recipe {
     private Integer storageDays;
 
     /** 再加熱方法(自由記述。例: "電子レンジ600Wで2分") */
-    @Column(name = "reheat_method", length = 200)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "reheat_method", columnDefinition = "text")
     private String reheatMethod;
 
     @Column(name = "created_at")
