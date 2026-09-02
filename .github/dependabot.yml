@@ -9,7 +9,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
 
   # GitHub Actionsのワークフローファイル(.github/workflows/*.yml)は現時点では
   # 存在しないが、将来追加した際にそのまま脆弱性チェック対象になるよう、

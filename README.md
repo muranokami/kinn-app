@@ -1,7 +1,9 @@
 # 勤 - 勤怠・健康・スケジュール管理アプリ
 
 Spring Boot(Java) + PostgreSQL + HTML/CSS/JavaScript で作成した統合管理アプリです。
-トップページから「勤怠管理」「健康管理」「スケジュール管理」の3機能に遷移できます。
+トップページから「勤怠管理」「健康管理」「スケジュール管理」「お知らせ」「残業申請」
+「タスク管理」の6機能に遷移できます。管理者は別途、管理者コンソール(`admin-top.html`)
+から組織・従業員・お知らせ・残業申請・タスク・健康監査ログ等を横断的に管理できます。
 
 - **勤怠管理**: 日ごとの出退勤を入力すると、月ごとに12項目を自動集計
   (勤務日数 / 勤務時間 / 残業時間 / 深夜残業 / 遅早回数 / 欠勤日数 /
@@ -27,10 +29,22 @@ Spring Boot(Java) + PostgreSQL + HTML/CSS/JavaScript で作成した統合管理
     炭水化物・食物繊維・塩分・写真URL・メモは任意で追加入力できます。今日の食事内容と
     栄養素の合計を1画面で可視化し、今日/昨日/1週間/1か月の履歴と朝昼夕の記録日数の
     傾向も確認できます。健康管理トップページにも今日の食事ウィジェットを表示し、
-    健康ダッシュボードと緩やかに統合しています。週間/月間の詳しい分析、勤怠・健康データ
-    との連携分析、AIによる献立提案・買い物リスト生成は、Phase 2以降で段階的に追加予定です
-    (未実装)。
+    健康ダッシュボードと緩やかに統合しています。AIによる献立提案(後述「レシピ・AI献立
+    提案」)はPhase 3として実装済みです。週間/月間の詳しい分析、勤怠・健康データとの
+    連携分析、買い物リスト生成は今後の拡張候補です(未実装)。
 - **スケジュール管理**: 予定(日時・タイトル・分類・メモ)を登録・編集・削除し、月ごとに一覧表示
+- **お知らせ**: 管理者が全社・部署単位でお知らせを配信し、公開日時(予約投稿)・
+  表示終了日時を設定できます。一般ユーザーは既読管理・未読件数の確認ができます。
+- **残業申請**: 「◯月◯日に◯時間残業予定」という事前申請を行い、管理者が承認/却下します。
+  勤怠実績(実際の打刻から計算される残業時間)とは別物として扱い、両方を並べて確認できます。
+- **タスク管理**: 担当者・期限・優先度付きのタスクを登録・編集・削除できます。
+  期限が近い/超過したタスクは、メール等の外部通知を使わずアプリ内アラートとして
+  本人が画面を開いた際に表示されます。管理者は部署内のタスクを横断的に確認できます。
+- **レシピ・AI献立提案**: 前日の食事記録・健康情報・食の好みをもとに、朝昼夕の献立を
+  AI(Anthropic Messages API)が提案します(`AiMealSuggestionController`)。AI未設定・
+  失敗時はルールベースの提案ロジックに自動フォールバックするため、AI APIキーが無い
+  環境でも動作します。提案を保存するとレシピ(材料・手順・栄養素)として管理でき、
+  AI提案の履歴も確認できます(`meal-ai-history.html`)。
 
 さらに、Webアプリとは独立したPython分析スクリプトで、勤怠・健康データを横断的に
 分析したレポートを出力できます(`python/health_report.py` は従来の月次健康記録との
@@ -394,6 +408,14 @@ HTTPS強制設定だけを先取りして有効化すると、構成によって
   実際のクライアントIP(Renderのプロキシ経由でも正しいIP)で記録されていること
   (`server.forward-headers-strategy=framework`が効いているかの確認)。
 
+### 運用メモ
+
+- Neon等の接続情報をコマンドラインで`psql "postgresql://user:password@host/db"`のように
+  URL形式で手動組み立てする際、パスワードに記号(`@` `#` `%` 等)が含まれていると
+  URLの区切り文字と衝突するため、URLエンコードが必要になることがあります。
+  アプリ自体は`DB_USERNAME` / `DB_PASSWORD`を環境変数から個別に読み込み、
+  URLパースを経由せず接続するため、この問題の影響を受けません。
+
 ## Python分析スクリプト
 
 `python/health_report.py` は、Webアプリの実行フローとは独立して動く分析バッチです。
@@ -431,49 +453,84 @@ python3 health_check_analysis.py --days 90
 ```
 kinn-app/
 ├── pom.xml
+├── Dockerfile                      Render等のPaaS向けマルチステージビルド
+├── .github/
+│   └── dependabot.yml               Maven依存関係の週次脆弱性チェック(前述「既知の制約」参照)
 ├── src/main/java/com/kinn/app/
 │   ├── KinnApplication.java        起動クラス
 │   ├── entity/                     AttendanceRecord, HealthRecord, ScheduleEvent,
-│   │                                HealthProfile, HealthCheck,
-│   │                                MealRecord / MealType(食事管理) ほか
-│   ├── repository/                 JPAリポジトリ
+│   │                                HealthProfile, HealthCheck, MealRecord / MealType,
+│   │                                Task, Announcement / AnnouncementRead, OvertimeRequest,
+│   │                                Recipe / RecipeIngredient / RecipeStep,
+│   │                                AiMealSuggestion / AiMealSuggestionItem,
+│   │                                UserFoodPreference, Company / Department / AppUser ほか
+│   ├── repository/                 JPAリポジトリ(entityと概ね1対1)
 │   ├── service/                    AttendanceService / HealthService / ScheduleService /
 │   │                                HealthProfileService / HealthCheckService /
 │   │                                HealthScoreService(スコア算出ロジックを独立管理) /
-│   │                                HealthTrendService /
-│   │                                HealthAnalysisService /
-│   │                                MealService(食事管理、Phase 1)
-│   ├── controller/                 REST API(拡張健康管理は複数コントローラに分割、
-│   │                                MealControllerが食事管理API)
-│   └── dto/                        DTO(APIの入出力用。MealRecordDto / DayMealsDto /
-│                                    MealNutritionSummaryDtoなど)
+│   │                                HealthTrendService / HealthAnalysisService /
+│   │                                MealService(食事管理、Phase 1) /
+│   │                                MealRecommendationService(AI献立提案、Phase 3。
+│   │                                AI未設定時はルールベースにフォールバック) /
+│   │                                RecipeService / TaskService / AnnouncementService /
+│   │                                OvertimeRequestService / UserFoodPreferenceService /
+│   │                                Admin*Service(管理者コンソール向け集計・操作)
+│   ├── controller/                 REST API(機能ごとに分割。管理者専用APIは
+│   │                                Admin*Controllerに分離しロール制御)
+│   ├── dto/                        DTO(APIの入出力用。機能ごとに1〜数個)
+│   ├── audit/                      HealthAuditAspect等(AOPベースの監査ログ・
+│   │                                認可拒否時のセキュリティログ出力)
+│   ├── security/                   SecurityConfig / AppUserDetailsService /
+│   │                                RateLimiter / LoginAttemptListener ほか(前述「セキュリティ」参照)
+│   └── config/                     ProductionSafetyChecker(本番起動時の安全チェック)や
+│                                    各種マイグレーション補助Runnerなど
 ├── src/main/resources/
-│   ├── application.properties      DB接続設定
+│   ├── application.properties      DB接続設定など共通設定
+│   ├── application-prod.properties 本番プロファイルでの上書き設定
+│   ├── logback-spring.xml          ロギング設定(セキュリティログの出力先を
+│   │                                prod以外はファイル、prodはコンソールに切り替え)
+│   ├── db/migration/               Flywayマイグレーション(V1〜。詳細は前述「今後の
+│   │                                テーブル変更の運用」参照)
 │   └── static/                     フロントエンド(HTML/CSS/JS)
 │       ├── index.html              トップページ
+│       ├── login.html / register.html / change-password.html  認証系
 │       ├── attendance.html         勤怠管理
-│       ├── health.html             健康管理(従来: 月次健康記録)
+│       ├── schedule.html           スケジュール管理
+│       ├── announcement.html       お知らせ
+│       ├── overtime.html           残業申請
+│       ├── task.html               タスク管理
 │       ├── health-top.html         健康管理トップ(拡張機能のハブ)
+│       ├── health.html             健康管理(従来: 月次健康記録)
 │       ├── health-profile.html     健康プロフィール
 │       ├── health-check.html       今日の体調チェック
 │       ├── health-score.html       健康スコア
 │       ├── health-history.html     健康履歴
 │       ├── health-graph.html       健康グラフ(推移)
 │       ├── health-analysis.html    勤怠×健康分析
+│       ├── health-audit-log.html   健康データアクセスの自分の履歴確認
 │       ├── meal.html               食事記録(朝・昼・夕・間食の入力+今日の食事の可視化)
 │       ├── meal-history.html       食事履歴(今日/昨日/1週間/1か月)
-│       ├── schedule.html           スケジュール管理
+│       ├── meal-ai-history.html    AI献立提案の履歴
+│       ├── recipe.html             レシピ・調理方法
+│       ├── admin-top.html          管理者コンソールのトップ
+│       ├── admin-dashboard.html    管理者ダッシュボード
+│       ├── admin-employees.html / admin-departments.html  従業員・部署管理
+│       ├── admin-attendance.html / admin-schedule.html    勤怠・スケジュールの管理者閲覧
+│       ├── admin-announcement.html / admin-overtime.html / admin-task.html
+│       │                          お知らせ配信・残業申請の承認・タスクの管理者操作
+│       ├── admin-health-audit-log.html  健康データアクセス監査ログの検索(管理者専用)
 │       ├── css/                    style.css(共通) / top.css(トップページ演出) /
-│       │                            health-extra.css(拡張健康管理・食事管理の追加スタイル)
-│       └── js/                     top.js / app.js / health.js / schedule.js /
-│                                    health-common.js(共通ユーティリティ・簡易チャート描画) /
-│                                    health-profile.js / health-check.js / health-score.js /
-│                                    health-history.js / health-graph.js /
-│                                    health-analysis.js /
-│                                    health-top.js(今日の食事ウィジェット) /
-│                                    meal.js / meal-history.js
+│       │                            機能ごとの*-extra.css(health/meal/task/announcement/
+│       │                            overtime/attendance/schedule) / auth-common.css / break.css
+│       └── js/                     top.js / app.js(共通ユーティリティ) /
+│                                    機能ごとの*.js(html一覧と概ね1対1。health-common.jsは
+│                                    健康管理系で共有する簡易チャート描画等のユーティリティ、
+│                                    recipe-shared.jsはrecipe.html/meal-ai-history.htmlで共有)
 └── python/
     ├── health_report.py            勤怠・健康データの分析バッチ(独立スクリプト)
     ├── health_check_analysis.py    勤怠×健康の統計分析バッチ(独立スクリプト)
     └── requirements.txt
 ```
+
+上記は主要ディレクトリの要約です。ファイル単位の網羅的な一覧は
+`find src/main/resources/static -maxdepth 1 -name "*.html"` 等で随時確認してください。
