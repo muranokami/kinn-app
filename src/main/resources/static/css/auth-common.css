@@ -1,22 +1,101 @@
 /* ------------------------------------------------------------------
-   ログイン中ユーザー情報バー(auth-common.jsが.app-headerへ描画する)。
+   ログイン中ユーザー情報バー(auth-common.jsが.app-header/.heroへ描画する)。
    style.css自体は変更しない。
+
+   .app-header配下(index.html以外のほぼ全画面)ではタイトル行の右端に
+   収まる従来どおりの横並びのまま、.hero配下(トップページのみ)では
+   トップページの情報チップ(top.cssの.info-chip。白背景・角丸・淡い影の
+   ピル型)とトーンを揃えて中央寄せにする(下の「.hero .auth-bar」参照)。
+   ここで使う白背景・角丸・影はtop.cssには依存せず単体で完結させている
+   (auth-common.cssはtop.cssを読み込まない画面にも読み込まれるため)。
 ------------------------------------------------------------------- */
 .auth-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-left: auto;
   font-size: 13px;
 }
+
+/* 氏名+会社名/役職をひとつの白背景バッジにまとめる(情報チップと同じトーン) */
+.auth-bar-identity {
+  display: flex;
+  align-items: center;
+  min-width: 0; /* 子要素のtext-overflow: ellipsisを効かせるために必要 */
+  max-width: 100%;
+  gap: 8px;
+  padding: 7px 14px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(35, 39, 46, 0.05);
+}
 .auth-bar-user {
   font-weight: 700;
   color: var(--kon);
+  max-width: 9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .auth-bar-company {
   color: var(--ink-soft);
-  padding-left: 10px;
-  border-left: 1px solid var(--paper-line);
+  padding-left: 8px;
+  border-left: 1px solid rgba(35, 39, 46, 0.14);
+  max-width: 12em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 管理者メニュー・パスワード変更・ログアウトの3操作。auth-common.js側で
+   全て.btn.btn-secondary.btn-smを付けて重みを揃えているつもりだったが、
+   .btn/.btn-secondary/.btn-sm自体はstyle.cssにしか定義がなく、index.html
+   (トップページ)はtop.css/break.css/auth-common.cssしか読み込まないため
+   実際には何のスタイルも当たっていなかった(<button>は素のUAボタン装飾で
+   それらしく見えていただけで、<a>2つは無装飾のテキストリンクのままだった)。
+   auth-bar-actions配下に限定してここでも同じ見た目を再定義し、単体で
+   完結させる(値はstyle.cssの.btn/.btn-secondary/.btn-smと合わせてあるため、
+   style.cssを読み込む他画面では見た目は変わらない。border-radiusだけは
+   各画面が持つvar(--radius)にそのまま追従するので、index.html側は
+   情報チップと同じ丸みに、他画面は既存の角丸小のトーンに、それぞれ自然に揃う) */
+.auth-bar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.auth-bar-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  border-radius: var(--radius);
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.05s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.auth-bar-actions .btn:active { transform: translateY(1px); }
+.auth-bar-actions .btn-secondary {
+  background: #fff;
+  color: var(--kon);
+  border: 1px solid var(--kon);
+}
+.auth-bar-actions .btn-secondary:hover { background: #E7EEF7; }
+.auth-bar-actions .btn-sm {
+  padding: 5px 12px;
+  font-size: 12.5px;
+}
+
+/* トップページ(.hero配下)のみ、情報チップと揃えて中央寄せの
+   独立した行にする */
+.hero .auth-bar {
+  width: 100%;
+  margin: 18px 0 0;
+  justify-content: center;
 }
 
 /* --- ログイン・新規登録フォーム --- */
@@ -93,12 +172,16 @@
    幅が足りない場合はここ(.auth-bar)が折り返して2行目に来る。折り返した際に
    margin-left: auto が中途半端な余白を作らないよう、幅いっぱいに広げて
    左寄せにする(既存のブレークポイント900pxをstyle.css/health-extra.css/
-   task-extra.cssに揃える)。 --- */
+   task-extra.cssに揃える)。.hero配下は元々width:100%なのでこの上書きは
+   実質影響しない(justify-content:centerのまま中央寄せが維持される)。
+   氏名/会社名バッジの最大幅も、はみ出し防止のため狭めておく。 --- */
 @media (max-width: 900px) {
   .auth-bar {
     margin-left: 0;
     width: 100%;
     flex-wrap: wrap;
   }
+  .auth-bar-user { max-width: 7em; }
+  .auth-bar-company { max-width: 8em; }
   .auth-container { padding-top: 28px; }
 }

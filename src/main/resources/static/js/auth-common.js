@@ -106,11 +106,20 @@ function buildSkeletonBlock(lineCount = 3) {
       // 一般ユーザーは自分でパスワードを変更できない仕様のため、この導線は管理者にのみ表示する
       // (管理者による強制リセット直後は、リンクを辿らずともMustChangePasswordFilterが
       // change-password.htmlへ自動的に誘導する)。
+      // 氏名/会社名は1つのバッジ(.auth-bar-identity)に、3つの操作は1つのグループ
+      // (.auth-bar-actions)にまとめる(トップページの情報チップと見た目を揃えるための
+      // グルーピング。auth-common.css参照)。長い場合に備え、バッジにはtitle属性で
+      // 全文を持たせておく(CSS側で省略表示にした際もホバーで確認できるように)。
+      const identityFull = `${user.fullName}${user.companyName ? " / " + user.companyName : ""}${user.departmentName ? " / " + user.departmentName : ""}`;
       bar.innerHTML = `
-        <span class="auth-bar-user">${escapeHtml(user.fullName)}</span>
-        <span class="auth-bar-company">${escapeHtml(user.companyName)}${user.departmentName ? " / " + escapeHtml(user.departmentName) : ""}</span>
-        ${user.role === "ADMIN" ? '<a class="btn btn-secondary btn-sm" href="/admin-top.html">🏢 管理者メニュー</a><a class="btn btn-secondary btn-sm" href="/change-password.html">🔑 パスワード変更</a>' : ""}
-        <button type="button" class="btn btn-secondary btn-sm" id="authLogoutBtn">ログアウト</button>
+        <div class="auth-bar-identity" title="${escapeHtml(identityFull)}">
+          <span class="auth-bar-user">${escapeHtml(user.fullName)}</span>
+          <span class="auth-bar-company">${escapeHtml(user.companyName)}${user.departmentName ? " / " + escapeHtml(user.departmentName) : ""}</span>
+        </div>
+        <div class="auth-bar-actions">
+          ${user.role === "ADMIN" ? '<a class="btn btn-secondary btn-sm" href="/admin-top.html">🏢 管理者メニュー</a><a class="btn btn-secondary btn-sm" href="/change-password.html">🔑 パスワード変更</a>' : ""}
+          <button type="button" class="btn btn-secondary btn-sm" id="authLogoutBtn">ログアウト</button>
+        </div>
       `;
       header.appendChild(bar);
       document.getElementById("authLogoutBtn").addEventListener("click", logout);
