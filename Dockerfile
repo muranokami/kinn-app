@@ -36,7 +36,12 @@ WORKDIR /app
 # rootで実行しない(コンテナが乗っ取られた場合の影響範囲を減らすための最小限の対策)
 RUN useradd --system --no-create-home --shell /usr/sbin/nologin appuser
 COPY --from=build /workspace/target/kinn-app.jar app.jar
-RUN chown appuser:appuser app.jar
+
+# logback-spring.xml がセキュリティログを logs/security.log (=/app/logs/security.log) に
+# 書き出す設定になっている(本番プロファイルではコンソール出力のみに切り替わるが、
+# SPRING_PROFILES_ACTIVE未設定時など念のためのフォールバックとしてディレクトリを用意しておく)。
+# 非rootユーザーが書き込めるよう、chownはUSER切り替え前に行う。
+RUN mkdir -p /app/logs && chown -R appuser:appuser /app
 USER appuser
 
 # Renderは PORT 環境変数でリッスンポートを渡してくる(application.propertiesの
