@@ -21,7 +21,7 @@
         <java.version>17</java.version>
         <!-- ローカルのJDK(24)でLombokのアノテーション処理を動かすため、
              spring-boot-starter-parentが指定するデフォルトより新しいバージョンに固定 -->
-        <lombok.version>1.18.38</lombok.version>
+        <lombok.version>1.18.48</lombok.version>
     </properties>
 
     <dependencies>
